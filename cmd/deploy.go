@@ -16,7 +16,8 @@ var deployCmd = &cobra.Command{
 }
 
 var deployOpts = struct {
-	namespace string
+	deployment string
+	namespace  string
 }{}
 
 func doDeploy(cmd *cobra.Command, args []string) error {
@@ -25,14 +26,12 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to create Kubernetes client")
 	}
 
-	deployments, err := client.ListDeployment(deployOpts.namespace)
+	deployment, err := client.DetectTargetDeployment(deployOpts.namespace, deployOpts.deployment)
 	if err != nil {
-		return errors.Wrap(err, "failed to retrieve deployments")
+		return errors.Wrap(err, "failed to detect target Deployment")
 	}
 
-	for _, d := range deployments {
-		fmt.Println(d.Name)
-	}
+	fmt.Println(deployment)
 
 	return nil
 }
@@ -40,5 +39,6 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 func init() {
 	RootCmd.AddCommand(deployCmd)
 
+	deployCmd.Flags().StringVarP(&deployOpts.deployment, "deployment", "d", "", "target Deployment")
 	deployCmd.Flags().StringVar(&deployOpts.namespace, "namespace", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }
