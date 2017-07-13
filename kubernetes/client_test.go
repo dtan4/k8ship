@@ -274,3 +274,43 @@ func TestDetectTargetDeployment_without_name(t *testing.T) {
 		}
 	}
 }
+
+func TestSetImage(t *testing.T) {
+	deployment := &v1beta1.Deployment{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "deployment",
+			Namespace: "default",
+		},
+		Spec: v1beta1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						v1.Container{
+							Name:  "rails",
+							Image: "my-rails:v2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	clientset := fake.NewSimpleClientset(deployment)
+	client := &Client{
+		clientset: clientset,
+	}
+
+	container := "rails"
+	image := "my-rails:v3"
+
+	got, err := client.SetImage(deployment, container, image)
+	if err != nil {
+		t.Errorf("got error: %s", err)
+		return
+	}
+
+	gotImage := got.Spec.Template.Spec.Containers[0].Image
+	if gotImage != image {
+		t.Errorf("expected image: %q, got: %q", image, gotImage)
+	}
+}

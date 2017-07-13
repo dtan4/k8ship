@@ -18,6 +18,7 @@ var deployCmd = &cobra.Command{
 var deployOpts = struct {
 	container  string
 	deployment string
+	image      string
 	namespace  string
 }{}
 
@@ -37,8 +38,13 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to detect target container")
 	}
 
-	fmt.Println("deployment: " + deployment.Name)
-	fmt.Println("container:  " + container.Name)
+	fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
+	fmt.Printf("  before: %s\n", container.Image)
+	fmt.Printf("   after: %s\n", deployOpts.image)
+
+	if _, err := client.SetImage(deployment, container.Name, deployOpts.image); err != nil {
+		return errors.Wrap(err, "failed to set image")
+	}
 
 	return nil
 }
@@ -48,5 +54,6 @@ func init() {
 
 	deployCmd.Flags().StringVarP(&deployOpts.container, "container", "c", "", "target container")
 	deployCmd.Flags().StringVarP(&deployOpts.deployment, "deployment", "d", "", "target Deployment")
+	deployCmd.Flags().StringVar(&deployOpts.image, "image", "", "new image")
 	deployCmd.Flags().StringVar(&deployOpts.namespace, "namespace", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }

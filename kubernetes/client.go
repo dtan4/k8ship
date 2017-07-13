@@ -135,3 +135,32 @@ func (c *Client) ListDeployment(namespace string) ([]v1beta1.Deployment, error) 
 
 	return deployments.Items, nil
 }
+
+// SetImage sets new image to the given deployments
+func (c *Client) SetImage(deployment *v1beta1.Deployment, container, image string) (*v1beta1.Deployment, error) {
+	d := &v1beta1.Deployment{}
+	*d = *deployment
+
+	replaceImage(d, container, image)
+
+	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace).Update(d)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name)
+	}
+
+	return newd, nil
+}
+
+func replaceImage(deployment *v1beta1.Deployment, container, image string) {
+	containers := []v1.Container{}
+
+	for _, c := range deployment.Spec.Template.Spec.Containers {
+		if c.Name == container {
+			c.Image = image
+		}
+
+		containers = append(containers, c)
+	}
+
+	deployment.Spec.Template.Spec.Containers = containers
+}
