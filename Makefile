@@ -4,6 +4,7 @@ REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
 LDFLAGS   := -ldflags="-s -w -X \"main.Version=$(VERSION)\" -X \"main.Revision=$(REVISION)\""
+NOVENDOR  := $(shell go list ./... | grep -v vendor)
 
 DIST_DIRS := find * -type d -exec
 
@@ -11,6 +12,18 @@ DIST_DIRS := find * -type d -exec
 
 bin/$(NAME): $(SRCS)
 	go build $(LDFLAGS) -o bin/$(NAME)
+
+.PHONY: ci-test
+ci-test:
+	echo "" > coverage.txt
+	set -e; \
+	for d in $(NOVENDOR); do \
+		go test -coverprofile=profile.out -covermode=atomic -v $$d; \
+		if [ -f profile.out ]; then \
+			cat profile.out >> coverage.txt; \
+			rm profile.out; \
+		fi; \
+	done
 
 .PHONY: clean
 clean:
@@ -55,7 +68,7 @@ release:
 
 .PHONY: test
 test:
-	go test -cover -v $$(go list ./... | grep -v vendor)
+	go test -cover -v $(NOVENDOR)
 
 .PHONY: update-deps
 update-deps: dep
