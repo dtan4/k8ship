@@ -1,0 +1,18 @@
+language: go
+go:
+  - '1.8.3'
+install:
+  - make deps
+script:
+  - make test
+before_deploy:
+  - if [ ! -z $TRAVIS_TAG ]; then make cross-build; fi
+  - if [ ! -z $TRAVIS_TAG ]; then make dist; fi
+deploy:
+  - provider: releases
+    skip_cleanup: true
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: 'dist/*.{tar.gz,zip}'
+    on:
+      tags: true
