@@ -12,7 +12,7 @@ import (
 // Client represents the wrapper of Kubernetes API client
 type Client struct {
 	clientConfig clientcmd.ClientConfig
-	clientset    *kubernetes.Clientset
+	clientset    kubernetes.Interface
 }
 
 // NewClient creates Client object using local kubecfg
@@ -52,6 +52,34 @@ func NewClientInCluster() (*Client, error) {
 	return &Client{
 		clientset: clientset,
 	}, nil
+}
+
+// DetectTargetDeployment returns the matched or the first deployment
+func (c *Client) DetectTargetDeployment(namespace, name string) (*v1beta1.Deployment, error) {
+	var deployment *v1beta1.Deployment
+
+	if name == "" {
+
+	} else {
+		d, err := c.GetDeployment(namespace, name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to retrieve Deployment %q", name)
+		}
+
+		deployment = d
+	}
+
+	return deployment, nil
+}
+
+// GetDeployment returns a deployment
+func (c *Client) GetDeployment(namespace, name string) (*v1beta1.Deployment, error) {
+	deployment, err := c.clientset.ExtensionsV1beta1().Deployments(namespace).Get(name)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to retrieve Deployment %q", name)
+	}
+
+	return deployment, nil
 }
 
 // ListDeployment returns the list of deployment
