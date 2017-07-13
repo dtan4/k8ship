@@ -56,21 +56,27 @@ func NewClientInCluster() (*Client, error) {
 
 // DetectTargetContainer returns the matched or the first container
 func (c *Client) DetectTargetContainer(deployment *v1beta1.Deployment, name string) (*v1.Container, error) {
-	var container *v1.Container
-
 	if name == "" {
+		if len(deployment.Spec.Template.Spec.Containers) > 1 {
+			names := []string{}
 
-	} else {
-		for _, c := range deployment.Spec.Template.Spec.Containers {
-			if c.Name == name {
-				return &c, nil
+			for _, c := range deployment.Spec.Template.Spec.Containers {
+				names = append(names, c.Name)
 			}
+
+			return nil, errors.Errorf("multiple containers %q found in deployment %q", names, deployment.Name)
 		}
 
-		return nil, errors.Errorf("container %q does not exist", name)
+		return &deployment.Spec.Template.Spec.Containers[0], nil
 	}
 
-	return container, nil
+	for _, c := range deployment.Spec.Template.Spec.Containers {
+		if c.Name == name {
+			return &c, nil
+		}
+	}
+
+	return nil, errors.Errorf("container %q does not exist", name)
 }
 
 // DetectTargetDeployment returns the matched or the first deployment

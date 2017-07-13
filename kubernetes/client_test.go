@@ -28,10 +28,7 @@ func TestDetectTargetContainer_with_name(t *testing.T) {
 		},
 	}
 
-	clientset := fake.NewSimpleClientset(deployment)
-	client := &Client{
-		clientset: clientset,
-	}
+	client := &Client{}
 
 	testcases := []struct {
 		name      string
@@ -69,6 +66,82 @@ func TestDetectTargetContainer_with_name(t *testing.T) {
 
 			if got.Name != tc.name {
 				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			}
+		}
+	}
+}
+
+func TestDetectTargetContainer_without_name(t *testing.T) {
+	testcases := []struct {
+		deployment *v1beta1.Deployment
+		expectErr  bool
+		errMsg     string
+	}{
+		{
+			deployment: &v1beta1.Deployment{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "deployment",
+					Namespace: "default",
+				},
+				Spec: v1beta1.DeploymentSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name: "rails",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			deployment: &v1beta1.Deployment{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "deployment",
+					Namespace: "default",
+				},
+				Spec: v1beta1.DeploymentSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name: "rails",
+								},
+								v1.Container{
+									Name: "foobar",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `multiple containers ["rails" "foobar"] found in deployment "deployment"`,
+		},
+	}
+
+	name := ""
+
+	for _, tc := range testcases {
+		client := &Client{}
+
+		_, err := client.DetectTargetContainer(tc.deployment, name)
+
+		if tc.expectErr {
+			if err == nil {
+				t.Error("got no error")
+				continue
+			}
+
+			if !strings.Contains(err.Error(), tc.errMsg) {
+				t.Errorf("error %q does not contain %q", err.Error(), tc.errMsg)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("got error: %s", err)
 			}
 		}
 	}
