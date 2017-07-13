@@ -1,39 +1,44 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-
 package cmd
 
 import (
 	"fmt"
 
+	"github.com/dtan4/k8ship/kubernetes"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Deploy image",
+	RunE:  doDeploy,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("deploy called")
-	},
+var deployOpts = struct {
+	namespace string
+}{}
+
+func doDeploy(cmd *cobra.Command, args []string) error {
+	client, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	if err != nil {
+		return errors.Wrap(err, "failed to create Kubernetes client")
+	}
+
+	deployments, err := client.ListDeployment(deployOpts.namespace)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve deployments")
+	}
+
+	for _, d := range deployments {
+		fmt.Println(d.Name)
+	}
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(deployCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deployCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deployCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	deployCmd.Flags().StringVar(&deployOpts.namespace, "namespace", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }

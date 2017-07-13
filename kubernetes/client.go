@@ -3,6 +3,8 @@ package kubernetes
 import (
 	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -50,4 +52,14 @@ func NewClientInCluster() (*Client, error) {
 	return &Client{
 		clientset: clientset,
 	}, nil
+}
+
+// ListDeployment returns the list of deployment
+func (c *Client) ListDeployment(namespace string) ([]v1beta1.Deployment, error) {
+	deployments, err := c.clientset.ExtensionsV1beta1().Deployments(namespace).List(v1.ListOptions{})
+	if err != nil {
+		return []v1beta1.Deployment{}, errors.Wrap(err, "failed to retrieve Deployments")
+	}
+
+	return deployments.Items, nil
 }
