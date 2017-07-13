@@ -59,7 +59,26 @@ func (c *Client) DetectTargetDeployment(namespace, name string) (*v1beta1.Deploy
 	var deployment *v1beta1.Deployment
 
 	if name == "" {
+		ds, err := c.ListDeployment(namespace)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to retrieve Deployments")
+		}
 
+		if len(ds) == 0 {
+			return nil, errors.Errorf("no Deployment found in namespace %q", namespace)
+		}
+
+		if len(ds) > 1 {
+			names := []string{}
+
+			for _, d := range ds {
+				names = append(names, d.Name)
+			}
+
+			return nil, errors.Errorf("multiple Deployments %q found in namespace %q", names, namespace)
+		}
+
+		deployment = &ds[0]
 	} else {
 		d, err := c.GetDeployment(namespace, name)
 		if err != nil {

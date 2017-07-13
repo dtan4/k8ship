@@ -41,7 +41,7 @@ func TestDetectTargetDeployment_with_name(t *testing.T) {
 	namespace := "default"
 
 	for _, tc := range testcases {
-		got, err := client.GetDeployment(namespace, tc.name)
+		got, err := client.DetectTargetDeployment(namespace, tc.name)
 
 		if tc.expectErr {
 			if err == nil {
@@ -54,10 +54,83 @@ func TestDetectTargetDeployment_with_name(t *testing.T) {
 		} else {
 			if err != nil {
 				t.Errorf("got error: %s", err)
+				continue
 			}
 
 			if got.Name != tc.name {
 				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			}
+		}
+	}
+}
+
+func TestDetectTargetDeployment_without_name(t *testing.T) {
+	testcases := []struct {
+		deployments []v1beta1.Deployment
+		expectErr   bool
+		errMsg      string
+	}{
+		{
+			deployments: []v1beta1.Deployment{
+				v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			deployments: []v1beta1.Deployment{},
+			expectErr:   true,
+			errMsg:      `no Deployment found in namespace "default"`,
+		},
+		{
+			deployments: []v1beta1.Deployment{
+				v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+					},
+				},
+				v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "foobar",
+						Namespace: "default",
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `multiple Deployments ["deployment" "foobar"] found in namespace "default"`,
+		},
+	}
+
+	name := ""
+	namespace := "default"
+
+	for _, tc := range testcases {
+		clientset := fake.NewSimpleClientset(&v1beta1.DeploymentList{
+			Items: tc.deployments,
+		})
+		client := &Client{
+			clientset: clientset,
+		}
+
+		_, err := client.DetectTargetDeployment(namespace, name)
+
+		if tc.expectErr {
+			if err == nil {
+				t.Error("got no error")
+				continue
+			}
+
+			if !strings.Contains(err.Error(), tc.errMsg) {
+				t.Errorf("error %q does not contain %q", err.Error(), tc.errMsg)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("got error: %s", err)
 			}
 		}
 	}
