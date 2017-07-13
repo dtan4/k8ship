@@ -10,8 +10,10 @@ import (
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "k8ship",
-	Short: "Ship image to Kubernetes easily",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	Use:           "k8ship",
+	Short:         "Ship image to Kubernetes easily",
 }
 
 var rootOpts = struct {
