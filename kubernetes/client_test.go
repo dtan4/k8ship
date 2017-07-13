@@ -9,6 +9,71 @@ import (
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
+func TestDetectTargetContainer_with_name(t *testing.T) {
+	deployment := &v1beta1.Deployment{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "deployment",
+			Namespace: "default",
+		},
+		Spec: v1beta1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						v1.Container{
+							Name: "rails",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	clientset := fake.NewSimpleClientset(deployment)
+	client := &Client{
+		clientset: clientset,
+	}
+
+	testcases := []struct {
+		name      string
+		expectErr bool
+		errMsg    string
+	}{
+		{
+			name:      "rails",
+			expectErr: false,
+		},
+		{
+			name:      "foobar",
+			expectErr: true,
+			errMsg:    `container "foobar" does not exist`,
+		},
+	}
+
+	for _, tc := range testcases {
+		got, err := client.DetectTargetContainer(deployment, tc.name)
+
+		if tc.expectErr {
+			if err == nil {
+				t.Error("got no error")
+				continue
+			}
+
+			if !strings.Contains(err.Error(), tc.errMsg) {
+				t.Errorf("error %q does not contain %q", err.Error(), tc.errMsg)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("got error: %s", err)
+				continue
+			}
+
+			if got.Name != tc.name {
+				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			}
+		}
+	}
+}
+
 func TestDetectTargetDeployment_with_name(t *testing.T) {
 	deployment := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
@@ -46,6 +111,7 @@ func TestDetectTargetDeployment_with_name(t *testing.T) {
 		if tc.expectErr {
 			if err == nil {
 				t.Error("got no error")
+				continue
 			}
 
 			if !strings.Contains(err.Error(), tc.errMsg) {
