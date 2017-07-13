@@ -7,7 +7,9 @@ cache:
 install:
   - make deps
 script:
-  - make test
+  - make ci-test
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 before_deploy:
   - if [ ! -z $TRAVIS_TAG ]; then make cross-build; fi
   - if [ ! -z $TRAVIS_TAG ]; then make dist; fi
