@@ -12,6 +12,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// refCmd represents the ref command
+var refCmd = &cobra.Command{
+	Use:   "ref BRANCH|COMMIT_SHA1",
+	Short: "Deploy by git ref",
+	RunE:  doRef,
+}
+
 var refOpts = struct {
 	accessToken string
 	container   string
@@ -19,13 +26,6 @@ var refOpts = struct {
 	dryRun      bool
 	namespace   string
 }{}
-
-// refCmd represents the ref command
-var refCmd = &cobra.Command{
-	Use:   "ref BRANCH|COMMIT_SHA1",
-	Short: "Deploy by git ref",
-	RunE:  doRef,
-}
 
 func doRef(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
