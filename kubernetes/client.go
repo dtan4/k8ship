@@ -84,7 +84,7 @@ func (c *Client) DetectTargetDeployment(namespace, name string) (*v1beta1.Deploy
 	var deployment *v1beta1.Deployment
 
 	if name == "" {
-		ds, err := c.ListDeployment(namespace)
+		ds, err := c.ListDeployments(namespace)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to retrieve Deployments")
 		}
@@ -126,8 +126,8 @@ func (c *Client) GetDeployment(namespace, name string) (*v1beta1.Deployment, err
 	return deployment, nil
 }
 
-// ListDeployment returns the list of deployment
-func (c *Client) ListDeployment(namespace string) ([]v1beta1.Deployment, error) {
+// ListDeployments returns the list of deployment
+func (c *Client) ListDeployments(namespace string) ([]v1beta1.Deployment, error) {
 	deployments, err := c.clientset.ExtensionsV1beta1().Deployments(namespace).List(v1.ListOptions{})
 	if err != nil {
 		return []v1beta1.Deployment{}, errors.Wrap(err, "failed to retrieve Deployments")

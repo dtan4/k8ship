@@ -324,7 +324,7 @@ func TestGetDeployment(t *testing.T) {
 	}
 }
 
-func TestListDeployment(t *testing.T) {
+func TestListDeployments(t *testing.T) {
 	deployments := []v1beta1.Deployment{
 		v1beta1.Deployment{
 			ObjectMeta: v1.ObjectMeta{
@@ -349,7 +349,7 @@ func TestListDeployment(t *testing.T) {
 
 	namespace := "default"
 
-	got, err := client.ListDeployment(namespace)
+	got, err := client.ListDeployments(namespace)
 	if err != nil {
 		t.Errorf("got error: %s", err)
 	}
