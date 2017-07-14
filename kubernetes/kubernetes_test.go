@@ -63,7 +63,7 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 					Name:      "deployment",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"github": "rails:rails/rails",
+						"github": "rails=rails/rails",
 					},
 				},
 			},
@@ -78,7 +78,7 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 					Name:      "deployment",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"github": "rails:rails/rails,foobar:dtan4/foobar",
+						"github": "rails=rails/rails,foobar=dtan4/foobar",
 					},
 				},
 			},
@@ -105,7 +105,7 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 					Name:      "deployment",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"github": "rails:rails/rails,",
+						"github": "rails=rails/rails,",
 					},
 				},
 			},

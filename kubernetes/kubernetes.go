@@ -44,7 +44,7 @@ func RepositoriesFromDeployment(deployment *v1beta1.Deployment) (map[string]stri
 	repos := map[string]string{}
 
 	for _, f := range strings.Split(v, ",") {
-		ss := strings.Split(f, ":")
+		ss := strings.Split(f, "=")
 		if len(ss) != 2 {
 			return map[string]string{}, errors.Errorf(`invalid annotation %q value %q, must be "container=owner/repo"`, githubAnnotation, f)
 		}
