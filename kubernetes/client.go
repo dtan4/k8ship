@@ -143,6 +143,8 @@ func (c *Client) SetImage(deployment *v1beta1.Deployment, container, image strin
 
 	replaceImage(d, container, image)
 
+	// TODO: use PATCH for optimized update
+	//       original `kubectl set-image` uses PATCH
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace).Update(d)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name)
