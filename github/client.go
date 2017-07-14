@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
 
 // Client represents the wrapper of GitHub API client
 type Client struct {
 	client *github.Client
+	ctx    context.Context
 }
 
 // NewClient creates new Client object
@@ -22,5 +24,17 @@ func NewClient(ctx context.Context, accesToken string) *Client {
 
 	return &Client{
 		client: client,
+		ctx:    ctx,
 	}
+}
+
+// CommitFronRef returns the latest commit SHA-1 of the given ref
+// (branch, full commit SHA-1, short commit SHA-1...)
+func (c *Client) CommitFronRef(owner, repo, ref string) (string, error) {
+	sha1, _, err := c.client.Repositories.GetCommitSHA1(c.ctx, owner, repo, ref, "")
+	if err != nil {
+		return "", errors.Wrap(err, "failed to retrieve commit SHA-1")
+	}
+
+	return sha1, nil
 }
