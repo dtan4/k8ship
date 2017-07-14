@@ -324,6 +324,42 @@ func TestGetDeployment(t *testing.T) {
 	}
 }
 
+func TestListDeployment(t *testing.T) {
+	deployments := []v1beta1.Deployment{
+		v1beta1.Deployment{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "deployment",
+				Namespace: "default",
+			},
+		},
+		v1beta1.Deployment{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "foobar",
+				Namespace: "default",
+			},
+		},
+	}
+
+	clientset := fake.NewSimpleClientset(&v1beta1.DeploymentList{
+		Items: deployments,
+	})
+	client := &Client{
+		clientset: clientset,
+	}
+
+	namespace := "default"
+
+	got, err := client.ListDeployment(namespace)
+	if err != nil {
+		t.Errorf("got error: %s", err)
+	}
+
+	expectedLength := 2
+	if len(got) != expectedLength {
+		t.Errorf("expected length: %d, got: %d", expectedLength, len(got))
+	}
+}
+
 func TestSetImage(t *testing.T) {
 	deployment := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
