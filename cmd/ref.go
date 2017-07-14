@@ -1,39 +1,101 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"strings"
 
+	"github.com/dtan4/k8ship/github"
+	"github.com/dtan4/k8ship/kubernetes"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
+var refOpts = struct {
+	accessToken string
+	container   string
+	deployment  string
+	dryRun      bool
+	namespace   string
+}{}
+
 // refCmd represents the ref command
 var refCmd = &cobra.Command{
-	Use:   "ref",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "ref BRANCH|COMMIT_SHA1",
+	Short: "Deploy by git ref",
+	RunE:  doRef,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ref called")
-	},
+func doRef(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("ref (branch, full commit SHA-1 or short commit SHA-1) must be given")
+	}
+	ref := args[0]
+
+	k8sClient, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	if err != nil {
+		return errors.Wrap(err, "failed to create Kubernetes client")
+	}
+
+	deployment, err := k8sClient.DetectTargetDeployment(deployOpts.namespace, deployOpts.deployment)
+	if err != nil {
+		return errors.Wrap(err, "failed to detect target Deployment")
+	}
+
+	container, err := k8sClient.DetectTargetContainer(deployment, deployOpts.container)
+	if err != nil {
+		return errors.Wrap(err, "failed to detect target container")
+	}
+
+	repos, err := kubernetes.RepositoriesFromDeployment(deployment)
+	if err != nil {
+		return errors.Wrap(err, "failed to extract repositories from deployment")
+	}
+
+	repo, ok := repos[container.Name]
+	if !ok {
+		return errors.Errorf("GitHub repository for container %q not found in deployment", container.Name)
+	}
+
+	ctx := context.Background()
+	ghClient := github.NewClient(ctx, refOpts.accessToken)
+
+	sha1, err := ghClient.CommitFronRef(repo, ref)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve commit SHA-1")
+	}
+
+	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name)
+	newImage := strings.Split(currentImage, ":")[0] + ":" + sha1
+
+	if deployOpts.dryRun {
+		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
+		fmt.Printf("[dry-run]  before: %s\n", container.Image)
+		fmt.Printf("[dry-run]   after: %s\n", newImage)
+	} else {
+		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
+		fmt.Printf("  before: %s\n", container.Image)
+		fmt.Printf("   after: %s\n", newImage)
+
+		if _, err := k8sClient.SetImage(deployment, container.Name, newImage); err != nil {
+			return errors.Wrap(err, "failed to set image")
+		}
+	}
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(refCmd)
 
-	// Here you will define your flags and configuration settings.
+	refCmd.Flags().StringVar(&refOpts.accessToken, "access-token", "", "GitHub access token")
+	refCmd.Flags().StringVarP(&refOpts.container, "container", "c", "", "target container")
+	refCmd.Flags().StringVarP(&refOpts.deployment, "deployment", "d", "", "target Deployment")
+	refCmd.Flags().BoolVar(&refOpts.dryRun, "dry-run", false, "dry run")
+	refCmd.Flags().StringVar(&refOpts.namespace, "namespace", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// refCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// refCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	if refOpts.accessToken == "" {
+		refOpts.accessToken = os.Getenv("GITHUB_ACCESS_TOKEN")
+	}
 }

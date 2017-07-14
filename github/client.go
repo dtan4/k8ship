@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
@@ -30,8 +31,13 @@ func NewClient(ctx context.Context, accesToken string) *Client {
 
 // CommitFronRef returns the latest commit SHA-1 of the given ref
 // (branch, full commit SHA-1, short commit SHA-1...)
-func (c *Client) CommitFronRef(owner, repo, ref string) (string, error) {
-	sha1, _, err := c.client.Repositories.GetCommitSHA1(c.ctx, owner, repo, ref, "")
+func (c *Client) CommitFronRef(repo, ref string) (string, error) {
+	ss := strings.Split(repo, "/")
+	if len(ss) != 2 {
+		return "", errors.Errorf("invalid repository %q, must be owner/repo", repo)
+	}
+
+	sha1, _, err := c.client.Repositories.GetCommitSHA1(c.ctx, ss[0], ss[1], ref, "")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to retrieve commit SHA-1")
 	}
