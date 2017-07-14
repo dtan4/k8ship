@@ -62,7 +62,7 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "deployment",
 					Namespace: "default",
-					Labels: map[string]string{
+					Annotations: map[string]string{
 						"github": "rails:rails/rails",
 					},
 				},
@@ -77,7 +77,7 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "deployment",
 					Namespace: "default",
-					Labels: map[string]string{
+					Annotations: map[string]string{
 						"github": "rails:rails/rails,foobar:dtan4/foobar",
 					},
 				},
@@ -91,39 +91,39 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 		{
 			deployment: &v1beta1.Deployment{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-					Labels:    map[string]string{},
+					Name:        "deployment",
+					Namespace:   "default",
+					Annotations: map[string]string{},
 				},
 			},
 			expectErr: true,
-			errMsg:    `label "github" not found in deployment "deployment"`,
+			errMsg:    `annotation "github" not found in Deployment "deployment"`,
 		},
 		{
 			deployment: &v1beta1.Deployment{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "deployment",
 					Namespace: "default",
-					Labels: map[string]string{
+					Annotations: map[string]string{
 						"github": "rails:rails/rails,",
 					},
 				},
 			},
 			expectErr: true,
-			errMsg:    `invalid label "github" value "", must be "container=owner/repo"`,
+			errMsg:    `invalid annotation "github" value "", must be "container=owner/repo"`,
 		},
 		{
 			deployment: &v1beta1.Deployment{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "deployment",
 					Namespace: "default",
-					Labels: map[string]string{
+					Annotations: map[string]string{
 						"github": "foobarbaz",
 					},
 				},
 			},
 			expectErr: true,
-			errMsg:    `invalid label "github" value "foobarbaz", must be "container=owner/repo"`,
+			errMsg:    `invalid annotation "github" value "foobarbaz", must be "container=owner/repo"`,
 		},
 	}
 

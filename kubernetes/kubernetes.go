@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	githubLabel = "github"
+	githubAnnotation = "github"
 )
 
 // DefaultConfigFile returns the default kubeconfig file path
@@ -34,11 +34,11 @@ func ContainerImageFromDeployment(deployment *v1beta1.Deployment, container stri
 	return ""
 }
 
-// RepositoriesFromDeployment returns the reportories attached by 'github' label
+// RepositoriesFromDeployment returns the reportories attached by 'github' annotation
 func RepositoriesFromDeployment(deployment *v1beta1.Deployment) (map[string]string, error) {
-	v, ok := deployment.Labels[githubLabel]
+	v, ok := deployment.Annotations[githubAnnotation]
 	if !ok {
-		return map[string]string{}, errors.Errorf("label %q not found in deployment %q", githubLabel, deployment.Name)
+		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", githubAnnotation, deployment.Name)
 	}
 
 	repos := map[string]string{}
@@ -46,7 +46,7 @@ func RepositoriesFromDeployment(deployment *v1beta1.Deployment) (map[string]stri
 	for _, f := range strings.Split(v, ",") {
 		ss := strings.Split(f, ":")
 		if len(ss) != 2 {
-			return map[string]string{}, errors.Errorf(`invalid label %q value %q, must be "container=owner/repo"`, githubLabel, f)
+			return map[string]string{}, errors.Errorf(`invalid annotation %q value %q, must be "container=owner/repo"`, githubAnnotation, f)
 		}
 		repos[ss[0]] = ss[1]
 	}
