@@ -16,9 +16,9 @@ type Client struct {
 }
 
 // NewClient creates new Client object
-func NewClient(ctx context.Context, accesToken string) *Client {
+func NewClient(ctx context.Context, accessToken string) *Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{
-		AccessToken: accesToken,
+		AccessToken: accessToken,
 	})
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
