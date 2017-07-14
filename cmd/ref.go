@@ -38,12 +38,12 @@ func doRef(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to create Kubernetes client")
 	}
 
-	deployment, err := k8sClient.DetectTargetDeployment(deployOpts.namespace, deployOpts.deployment)
+	deployment, err := k8sClient.DetectTargetDeployment(refOpts.namespace, refOpts.deployment)
 	if err != nil {
 		return errors.Wrap(err, "failed to detect target Deployment")
 	}
 
-	container, err := k8sClient.DetectTargetContainer(deployment, deployOpts.container)
+	container, err := k8sClient.DetectTargetContainer(deployment, refOpts.container)
 	if err != nil {
 		return errors.Wrap(err, "failed to detect target container")
 	}
@@ -69,7 +69,7 @@ func doRef(cmd *cobra.Command, args []string) error {
 	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name)
 	newImage := strings.Split(currentImage, ":")[0] + ":" + sha1
 
-	if deployOpts.dryRun {
+	if refOpts.dryRun {
 		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
 		fmt.Printf("[dry-run]  before: %s\n", container.Image)
 		fmt.Printf("[dry-run]   after: %s\n", newImage)
