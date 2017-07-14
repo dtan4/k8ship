@@ -1,39 +1,76 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-
 package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/dtan4/k8ship/kubernetes"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 // tagCmd represents the tag command
 var tagCmd = &cobra.Command{
 	Use:   "tag",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Deploy by image tagn",
+	RunE:  doTag,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("tag called")
-	},
+var tagOpts = struct {
+	container  string
+	deployment string
+	dryRun     bool
+	namespace  string
+}{}
+
+func doTag(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("image tag must be given")
+	}
+	tag := args[0]
+
+	client, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	if err != nil {
+		return errors.Wrap(err, "failed to create Kubernetes client")
+	}
+
+	deployment, err := client.DetectTargetDeployment(tagOpts.namespace, tagOpts.deployment)
+	if err != nil {
+		return errors.Wrap(err, "failed to detect target Deployment")
+	}
+
+	container, err := client.DetectTargetContainer(deployment, tagOpts.container)
+	if err != nil {
+		return errors.Wrap(err, "failed to detect target container")
+	}
+
+	var newImage string
+
+	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name)
+	newImage = strings.Split(currentImage, ":")[0] + ":" + tag
+
+	if tagOpts.dryRun {
+		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
+		fmt.Printf("[dry-run]  before: %s\n", container.Image)
+		fmt.Printf("[dry-run]   after: %s\n", newImage)
+	} else {
+		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
+		fmt.Printf("  before: %s\n", container.Image)
+		fmt.Printf("   after: %s\n", newImage)
+
+		if _, err := client.SetImage(deployment, container.Name, newImage); err != nil {
+			return errors.Wrap(err, "failed to set image")
+		}
+	}
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(tagCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// tagCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// tagCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	tagCmd.Flags().StringVarP(&tagOpts.container, "container", "c", "", "target container")
+	tagCmd.Flags().StringVarP(&tagOpts.deployment, "deployment", "d", "", "target Deployment")
+	tagCmd.Flags().BoolVar(&tagOpts.dryRun, "dry-run", false, "dry run")
+	tagCmd.Flags().StringVarP(&tagOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }
