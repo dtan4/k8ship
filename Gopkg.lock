@@ -105,6 +105,18 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/google/go-github"
+  packages = ["github"]
+  revision = "00874eae3fbfc6750bfff364b1897101684d2f30"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+
+[[projects]]
+  branch = "master"
   name = "github.com/google/gofuzz"
   packages = ["."]
   revision = "24818f796faf91cd76ec7bddd72458fbced7a6c1"
@@ -232,6 +244,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a80a5548ca1258f111dc7a9687c24a4762f4dfcc06657d2cb8cf35304fcfd8e6"
+  inputs-digest = "aadfc9b780c7ce8e6502a10d8436e83c1b718dfdbefa110adf38e32f7f77cf02"
   solver-name = "gps-cdcl"
   solver-version = 1
