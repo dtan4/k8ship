@@ -275,6 +275,55 @@ func TestDetectTargetDeployment_without_name(t *testing.T) {
 	}
 }
 
+func TestGetDeployment(t *testing.T) {
+	deployment := &v1beta1.Deployment{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "deployment",
+			Namespace: "default",
+		},
+	}
+
+	clientset := fake.NewSimpleClientset(deployment)
+	client := &Client{
+		clientset: clientset,
+	}
+
+	testcases := []struct {
+		name      string
+		expectErr bool
+	}{
+		{
+			name:      "deployment",
+			expectErr: false,
+		},
+		{
+			name:      "foobar",
+			expectErr: true,
+		},
+	}
+
+	namespace := "default"
+
+	for _, tc := range testcases {
+		got, err := client.GetDeployment(namespace, tc.name)
+
+		if tc.expectErr {
+			if err == nil {
+				t.Error("got no error")
+			}
+		} else {
+			if err != nil {
+				t.Errorf("got error: %s", err)
+				continue
+			}
+
+			if got.Name != tc.name {
+				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			}
+		}
+	}
+}
+
 func TestSetImage(t *testing.T) {
 	deployment := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
