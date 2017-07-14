@@ -93,7 +93,7 @@ func init() {
 	refCmd.Flags().StringVarP(&refOpts.container, "container", "c", "", "target container")
 	refCmd.Flags().StringVarP(&refOpts.deployment, "deployment", "d", "", "target Deployment")
 	refCmd.Flags().BoolVar(&refOpts.dryRun, "dry-run", false, "dry run")
-	refCmd.Flags().StringVar(&refOpts.namespace, "namespace", kubernetes.DefaultNamespace(), "Kubernetes namespace")
+	refCmd.Flags().StringVarP(&refOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 
 	if refOpts.accessToken == "" {
 		refOpts.accessToken = os.Getenv("GITHUB_ACCESS_TOKEN")
