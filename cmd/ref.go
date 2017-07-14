@@ -63,7 +63,7 @@ func doRef(cmd *cobra.Command, args []string) error {
 
 	sha1, err := ghClient.CommitFronRef(repo, ref)
 	if err != nil {
-		return errors.Wrap(err, "failed to retrieve commit SHA-1")
+		return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", ref, repo)
 	}
 
 	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name)
