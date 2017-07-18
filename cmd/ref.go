@@ -78,12 +78,18 @@ func doRef(cmd *cobra.Command, args []string) error {
 		fmt.Printf("  before: %s\n", container.Image())
 		fmt.Printf("   after: %s\n", newImage)
 
-		if _, err := k8sClient.SetImage(deployment, container.Name(), newImage); err != nil {
+		if _, err := k8sClient.SetImage(
+			deployment, container.Name(), newImage, composeRefCause(ref, container.Name(), deployment.Name(), refOpts.namespace),
+		); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
 	}
 
 	return nil
+}
+
+func composeRefCause(ref, container, deployment, namespace string) string {
+	return fmt.Sprintf(`k8ship ref %s --container "%s" --deployment "%s" --namespace "%s"`, ref, container, deployment, namespace)
 }
 
 func init() {

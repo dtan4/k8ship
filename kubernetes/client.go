@@ -11,6 +11,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	changeCauseAnnotation = "kubernetes.io/change-cause"
+)
+
 // Client represents the wrapper of Kubernetes API client
 type Client struct {
 	clientConfig clientcmd.ClientConfig
@@ -146,8 +150,13 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 }
 
 // SetImage sets new image to the given deployments
-func (c *Client) SetImage(deployment *Deployment, container, image string) (*Deployment, error) {
+func (c *Client) SetImage(deployment *Deployment, container, image, cause string) (*Deployment, error) {
 	patch := fmt.Sprintf(`{
+  "metadata": {
+    "annotations": {
+      "%s": %q
+    }
+  },
   "spec": {
     "template": {
       "spec": {
@@ -160,11 +169,11 @@ func (c *Client) SetImage(deployment *Deployment, container, image string) (*Dep
       }
     }
   }
-}`, container, image)
+}`, changeCauseAnnotation, cause, container, image)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name)
+		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name())
 	}
 
 	return NewDeployment(newd), nil

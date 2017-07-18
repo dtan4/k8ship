@@ -52,12 +52,18 @@ func doImage(cmd *cobra.Command, args []string) error {
 		fmt.Printf("  before: %s\n", container.Image())
 		fmt.Printf("   after: %s\n", image)
 
-		if _, err := client.SetImage(deployment, container.Name(), image); err != nil {
+		if _, err := client.SetImage(
+			deployment, container.Name(), image, composeImageCause(image, container.Name(), deployment.Name(), tagOpts.namespace),
+		); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
 	}
 
 	return nil
+}
+
+func composeImageCause(image, container, deployment, namespace string) string {
+	return fmt.Sprintf(`k8ship image %s --container "%s" --deployment "%s" --namespace "%s"`, image, container, deployment, namespace)
 }
 
 func init() {

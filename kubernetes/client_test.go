@@ -396,8 +396,9 @@ func TestSetImage(t *testing.T) {
 
 	container := "rails"
 	image := "my-rails:v3"
+	cause := "k8ship test"
 
-	_, err := client.SetImage(deployment, container, image)
+	_, err := client.SetImage(deployment, container, image, cause)
 	if err != nil {
 		t.Errorf("got error: %s", err)
 		return

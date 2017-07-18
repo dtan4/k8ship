@@ -104,13 +104,17 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		for _, d := range targetDeployments {
 			c := targetContainers[d.Name()]
 
-			if _, err := k8sClient.SetImage(d, c.Name(), newImage); err != nil {
+			if _, err := k8sClient.SetImage(d, c.Name(), newImage, composeDeployCause(ref, deployOpts.namespace)); err != nil {
 				return errors.Wrap(err, "failed to set image")
 			}
 		}
 	}
 
 	return nil
+}
+
+func composeDeployCause(ref, namespace string) string {
+	return fmt.Sprintf(`k8ship deploy %s --namespace "%s"`, ref, namespace)
 }
 
 func init() {
