@@ -44,19 +44,19 @@ func doTag(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to detect target container")
 	}
 
-	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name)
+	currentImage := deployment.ContainerImage(container.Name())
 	newImage := strings.Split(currentImage, ":")[0] + ":" + tag
 
 	if tagOpts.dryRun {
-		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
-		fmt.Printf("[dry-run]  before: %s\n", container.Image)
+		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name(), container.Name())
+		fmt.Printf("[dry-run]  before: %s\n", container.Image())
 		fmt.Printf("[dry-run]   after: %s\n", newImage)
 	} else {
-		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
-		fmt.Printf("  before: %s\n", container.Image)
+		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name(), container.Name())
+		fmt.Printf("  before: %s\n", container.Image())
 		fmt.Printf("   after: %s\n", newImage)
 
-		if _, err := client.SetImage(deployment, container.Name, newImage); err != nil {
+		if _, err := client.SetImage(deployment, container.Name(), newImage); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
 	}

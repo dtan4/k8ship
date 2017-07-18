@@ -48,14 +48,14 @@ func doRef(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to detect target container")
 	}
 
-	repos, err := kubernetes.RepositoriesFromDeployment(deployment)
+	repos, err := deployment.Repositories()
 	if err != nil {
 		return errors.Wrap(err, "failed to extract repositories from deployment")
 	}
 
-	repo, ok := repos[container.Name]
+	repo, ok := repos[container.Name()]
 	if !ok {
-		return errors.Errorf("GitHub repository for container %q not found in deployment", container.Name)
+		return errors.Errorf("GitHub repository for container %q not found in deployment", container.Name())
 	}
 
 	ctx := context.Background()
@@ -66,19 +66,19 @@ func doRef(cmd *cobra.Command, args []string) error {
 		return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", ref, repo)
 	}
 
-	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name)
+	currentImage := deployment.ContainerImage(container.Name())
 	newImage := strings.Split(currentImage, ":")[0] + ":" + sha1
 
 	if refOpts.dryRun {
-		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
-		fmt.Printf("[dry-run]  before: %s\n", container.Image)
+		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name(), container.Name())
+		fmt.Printf("[dry-run]  before: %s\n", container.Image())
 		fmt.Printf("[dry-run]   after: %s\n", newImage)
 	} else {
-		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
-		fmt.Printf("  before: %s\n", container.Image)
+		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name(), container.Name())
+		fmt.Printf("  before: %s\n", container.Image())
 		fmt.Printf("   after: %s\n", newImage)
 
-		if _, err := k8sClient.SetImage(deployment, container.Name, newImage); err != nil {
+		if _, err := k8sClient.SetImage(deployment, container.Name(), newImage); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
 	}

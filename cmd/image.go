@@ -44,15 +44,15 @@ func doImage(cmd *cobra.Command, args []string) error {
 	}
 
 	if imageOpts.dryRun {
-		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
-		fmt.Printf("[dry-run]  before: %s\n", container.Image)
+		fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", deployment.Name(), container.Name())
+		fmt.Printf("[dry-run]  before: %s\n", container.Image())
 		fmt.Printf("[dry-run]   after: %s\n", image)
 	} else {
-		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name, container.Name)
-		fmt.Printf("  before: %s\n", container.Image)
+		fmt.Printf("deploy to (deployment: %q, container: %q)\n", deployment.Name(), container.Name())
+		fmt.Printf("  before: %s\n", container.Image())
 		fmt.Printf("   after: %s\n", image)
 
-		if _, err := client.SetImage(deployment, container.Name, image); err != nil {
+		if _, err := client.SetImage(deployment, container.Name(), image); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
 	}
