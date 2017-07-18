@@ -8,7 +8,14 @@ import (
 )
 
 const (
+	deployTargetAnnotation          = "deploy/target"
+	deployTargetContainerAnnotation = "deploy/target-container"
+
 	githubAnnotation = "github"
+)
+
+var (
+	deployTargetAnnotationTrue = []string{"1", "true"}
 )
 
 // Deployment represents the wrapper of Kubernetes Deployment
@@ -48,6 +55,35 @@ func (d *Deployment) ContainerImage(container string) string {
 	}
 
 	return ""
+}
+
+// DeployTargetContainer returns
+// - specified in `deploy/target-container` annotation
+func (d *Deployment) DeployTargetContainer() (*Container, error) {
+	v, ok := d.Annotations()[deployTargetContainerAnnotation]
+	if !ok {
+		return nil, errors.Errorf(`annotation "deploy/target-container" does not exist in Deployment %q`, d.Name())
+	}
+
+	for _, c := range d.Containers() {
+		if c.Name() == v {
+			return c, nil
+		}
+	}
+
+	return nil, errors.Errorf("container %q does not exist in Deployment %q", v, d.Name())
+}
+
+// IsDeployTarget returns whether this deployment is deploy target or not
+// - has `deploy/target: 1` or `deploy/target: true` annotation
+func (d *Deployment) IsDeployTarget() bool {
+	for _, v := range deployTargetAnnotationTrue {
+		if d.raw.Annotations[deployTargetAnnotation] == v {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Labels returns the labels of Deployment
