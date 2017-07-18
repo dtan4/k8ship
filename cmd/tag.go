@@ -56,12 +56,18 @@ func doTag(cmd *cobra.Command, args []string) error {
 		fmt.Printf("  before: %s\n", container.Image())
 		fmt.Printf("   after: %s\n", newImage)
 
-		if _, err := client.SetImage(deployment, container.Name(), newImage); err != nil {
+		if _, err := client.SetImage(
+			deployment, container.Name(), newImage, composeTagCause(tag, container.Name(), deployment.Name(), tagOpts.namespace),
+		); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
 	}
 
 	return nil
+}
+
+func composeTagCause(tag, container, deployment, namespace string) string {
+	return fmt.Sprintf(`k8ship tag %s --container "%s" --deployment "%s" --namespace "%s"`, tag, container, deployment, namespace)
 }
 
 func init() {
