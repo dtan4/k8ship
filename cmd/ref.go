@@ -66,7 +66,7 @@ func doRef(cmd *cobra.Command, args []string) error {
 		return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", ref, repo)
 	}
 
-	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name())
+	currentImage := deployment.ContainerImage(container.Name())
 	newImage := strings.Split(currentImage, ":")[0] + ":" + sha1
 
 	if refOpts.dryRun {

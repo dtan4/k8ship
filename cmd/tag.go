@@ -44,7 +44,7 @@ func doTag(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to detect target container")
 	}
 
-	currentImage := kubernetes.ContainerImageFromDeployment(deployment, container.Name())
+	currentImage := deployment.ContainerImage(container.Name())
 	newImage := strings.Split(currentImage, ":")[0] + ":" + tag
 
 	if tagOpts.dryRun {

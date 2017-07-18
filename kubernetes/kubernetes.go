@@ -14,14 +14,3 @@ func DefaultConfigFile() string {
 func DefaultNamespace() string {
 	return v1.NamespaceDefault
 }
-
-// ContainerImageFromDeployment returns image name of the given container
-func ContainerImageFromDeployment(deployment *Deployment, container string) string {
-	for _, c := range deployment.Containers() {
-		if c.Name() == container {
-			return c.Image()
-		}
-	}
-
-	return ""
-}

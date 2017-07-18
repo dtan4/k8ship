@@ -39,6 +39,17 @@ func (d *Deployment) Containers() []*Container {
 	return containers
 }
 
+// ContainerImage returns image name of the given container
+func (d *Deployment) ContainerImage(container string) string {
+	for _, c := range d.Containers() {
+		if c.Name() == container {
+			return c.Image()
+		}
+	}
+
+	return ""
+}
+
 // Labels returns the labels of Deployment
 func (d *Deployment) Labels() map[string]string {
 	return d.raw.Labels

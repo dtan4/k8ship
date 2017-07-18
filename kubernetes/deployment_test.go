@@ -96,6 +96,49 @@ func TestDeploymentContainers(t *testing.T) {
 	}
 }
 
+func TestContainerImageFromDeployment(t *testing.T) {
+	deployment := &Deployment{
+		raw: &v1beta1.Deployment{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "deployment",
+				Namespace: "default",
+			},
+			Spec: v1beta1.DeploymentSpec{
+				Template: v1.PodTemplateSpec{
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							v1.Container{
+								Name:  "rails",
+								Image: "my-rails:v3",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	testcases := []struct {
+		container string
+		expected  string
+	}{
+		{
+			container: "rails",
+			expected:  "my-rails:v3",
+		},
+		{
+			container: "foobar",
+			expected:  "",
+		},
+	}
+
+	for _, tc := range testcases {
+		if got := deployment.ContainerImage(tc.container); got != tc.expected {
+			t.Errorf("expected: %q, got: %q", tc.expected, got)
+		}
+	}
+}
+
 func TestDeploymentLabels(t *testing.T) {
 	raw := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
