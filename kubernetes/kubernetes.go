@@ -16,6 +16,31 @@ func DefaultNamespace() string {
 	return v1.NamespaceDefault
 }
 
+// GetTargetImage returns the unique image name of target containers
+func GetTargetImage(containers map[string]*Container) (string, error) {
+	images := map[string]bool{}
+
+	for _, c := range containers {
+		images[c.Image()] = true
+	}
+
+	ss := make([]string, 0, len(images))
+
+	for k := range images {
+		ss = append(ss, k)
+	}
+
+	if len(images) == 0 {
+		return "", errors.Errorf("no image found")
+	}
+
+	if len(images) > 1 {
+		return "", errors.Errorf("multiple images %q found, all target containers must use the same image", ss)
+	}
+
+	return ss[0], nil
+}
+
 // GetTargetRepository returns the unique GitHub repository of target containers
 func GetTargetRepository(deployments []*Deployment, containers map[string]*Container) (string, error) {
 	repos := map[string]bool{}

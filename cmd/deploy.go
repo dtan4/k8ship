@@ -1,39 +1,110 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"strings"
 
+	"github.com/dtan4/k8ship/github"
+	"github.com/dtan4/k8ship/kubernetes"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Deploy",
+	RunE:  doDeploy,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("deploy called")
-	},
+var deployOpts = struct {
+	accessToken string
+	dryRun      bool
+	namespace   string
+}{}
+
+func doDeploy(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("ref (branch, full commit SHA-1 or short commit SHA-1) must be given")
+	}
+	ref := args[0]
+
+	k8sClient, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	if err != nil {
+		return errors.Wrap(err, "failed to create Kubernetes client")
+	}
+
+	deployments, err := k8sClient.ListDeployments(deployOpts.namespace)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve Deployments")
+	}
+
+	if len(deployments) == 0 {
+		return errors.Errorf("no Deployment found in namespace %s", deployOpts.namespace)
+	}
+
+	targetDeployments := []*kubernetes.Deployment{}
+
+	for _, d := range deployments {
+		if d.IsDeployTarget() {
+			targetDeployments = append(targetDeployments, d)
+		}
+	}
+
+	if len(deployments) == 0 {
+		return errors.New("no target Deployments found")
+	}
+
+	targetContainers := map[string]*kubernetes.Container{}
+
+	for _, d := range deployments {
+		c, err := d.DeployTargetContainer()
+		if err != nil {
+			return errors.Wrapf(err, "failed to retrieve deploy target container of Deployment %q", d.Name())
+		}
+
+		targetContainers[d.Name()] = c
+	}
+
+	repo, err := kubernetes.GetTargetRepository(targetDeployments, targetContainers)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve target repository")
+	}
+
+	image, err := kubernetes.GetTargetImage(targetContainers)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve target image")
+	}
+
+	ctx := context.Background()
+	ghClient := github.NewClient(ctx, refOpts.accessToken)
+
+	sha1, err := ghClient.CommitFronRef(repo, ref)
+	if err != nil {
+		return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", ref, repo)
+	}
+
+	newImage := strings.Split(image, ":")[0] + ":" + sha1
+
+	for _, d := range targetDeployments {
+		fmt.Printf("deployment: %q, container: %q\n", d.Name(), targetContainers[d.Name()].Name())
+	}
+	fmt.Printf("repo: %q\n", repo)
+	fmt.Printf("image: %q => %q\n", image, newImage)
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(deployCmd)
 
-	// Here you will define your flags and configuration settings.
+	deployCmd.Flags().StringVar(&deployOpts.accessToken, "access-token", "", "GitHub access token")
+	deployCmd.Flags().BoolVar(&deployOpts.dryRun, "dry-run", false, "dry run")
+	deployCmd.Flags().StringVarP(&deployOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deployCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deployCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	if deployOpts.accessToken == "" {
+		deployOpts.accessToken = os.Getenv("GITHUB_ACCESS_TOKEN")
+	}
 }
