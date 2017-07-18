@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	deployTargetAnnotation = "deploy/target"
+	deployTargetAnnotation          = "deploy/target"
+	deployTargetContainerAnnotation = "deploy/target-container"
 
 	githubAnnotation = "github"
 )
@@ -54,6 +55,23 @@ func (d *Deployment) ContainerImage(container string) string {
 	}
 
 	return ""
+}
+
+// DeployTargetContainer returns
+// - specified in `deploy/target-container` annotation
+func (d *Deployment) DeployTargetContainer() (*Container, error) {
+	v, ok := d.Annotations()[deployTargetContainerAnnotation]
+	if !ok {
+		return nil, errors.Errorf(`annotation "deploy/target-container" does not exist in Deployment %q`, d.Name())
+	}
+
+	for _, c := range d.Containers() {
+		if c.Name() == v {
+			return c, nil
+		}
+	}
+
+	return nil, errors.Errorf("container %q does not exist in Deployment %q", v, d.Name())
 }
 
 // IsDeployTarget returns whether this deployment is deploy target or not

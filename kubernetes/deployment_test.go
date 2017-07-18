@@ -139,6 +139,120 @@ func TestContainerImageFromDeployment(t *testing.T) {
 	}
 }
 
+func TestDeployTargetContainer(t *testing.T) {
+	testcases := []struct {
+		deployment   *Deployment
+		expectErr    bool
+		expectedName string
+		errMsg       string
+	}{
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"deploy/target":           "1",
+							"deploy/target-container": "rails",
+						},
+					},
+					Spec: v1beta1.DeploymentSpec{
+						Template: v1.PodTemplateSpec{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									v1.Container{
+										Name:  "rails",
+										Image: "my-rails:v3",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectErr:    false,
+			expectedName: "rails",
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"deploy/target":           "1",
+							"deploy/target-container": "nginx",
+						},
+					},
+					Spec: v1beta1.DeploymentSpec{
+						Template: v1.PodTemplateSpec{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									v1.Container{
+										Name:  "rails",
+										Image: "my-rails:v3",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `container "nginx" does not exist in Deployment "deployment"`,
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:        "deployment",
+						Namespace:   "default",
+						Annotations: map[string]string{},
+					},
+					Spec: v1beta1.DeploymentSpec{
+						Template: v1.PodTemplateSpec{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									v1.Container{
+										Name:  "rails",
+										Image: "my-rails:v3",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `annotation "deploy/target-container" does not exist in Deployment "deployment"`,
+		},
+	}
+
+	for _, tc := range testcases {
+		got, err := tc.deployment.DeployTargetContainer()
+
+		if tc.expectErr {
+			if err == nil {
+				t.Error("got no error")
+				continue
+			}
+
+			if !strings.Contains(err.Error(), tc.errMsg) {
+				t.Errorf("error %q does not container %q", err.Error(), tc.errMsg)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("got error: %s", err)
+			}
+
+			if got.Name() != tc.expectedName {
+				t.Errorf("expected name: %q, got: %q", tc.expectedName, got.Name())
+			}
+		}
+	}
+}
+
 func TestIsDeployTarget(t *testing.T) {
 	testcases := []struct {
 		deployment *Deployment
