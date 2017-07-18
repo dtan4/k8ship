@@ -55,24 +55,24 @@ func NewClientInCluster() (*Client, error) {
 }
 
 // DetectTargetContainer returns the matched or the first container
-func (c *Client) DetectTargetContainer(deployment *v1beta1.Deployment, name string) (*v1.Container, error) {
+func (c *Client) DetectTargetContainer(deployment *Deployment, name string) (*Container, error) {
 	if name == "" {
-		if len(deployment.Spec.Template.Spec.Containers) > 1 {
+		if len(deployment.Containers()) > 1 {
 			names := []string{}
 
-			for _, c := range deployment.Spec.Template.Spec.Containers {
-				names = append(names, c.Name)
+			for _, c := range deployment.Containers() {
+				names = append(names, c.Name())
 			}
 
-			return nil, errors.Errorf("multiple containers %q found in deployment %q", names, deployment.Name)
+			return nil, errors.Errorf("multiple containers %q found in deployment %q", names, deployment.Name())
 		}
 
-		return &deployment.Spec.Template.Spec.Containers[0], nil
+		return deployment.Containers()[0], nil
 	}
 
-	for _, c := range deployment.Spec.Template.Spec.Containers {
-		if c.Name == name {
-			return &c, nil
+	for _, c := range deployment.Containers() {
+		if c.Name() == name {
+			return c, nil
 		}
 	}
 
@@ -80,8 +80,8 @@ func (c *Client) DetectTargetContainer(deployment *v1beta1.Deployment, name stri
 }
 
 // DetectTargetDeployment returns the matched or the first deployment
-func (c *Client) DetectTargetDeployment(namespace, name string) (*v1beta1.Deployment, error) {
-	var deployment *v1beta1.Deployment
+func (c *Client) DetectTargetDeployment(namespace, name string) (*Deployment, error) {
+	var deployment *Deployment
 
 	if name == "" {
 		ds, err := c.ListDeployments(namespace)
@@ -97,13 +97,13 @@ func (c *Client) DetectTargetDeployment(namespace, name string) (*v1beta1.Deploy
 			names := []string{}
 
 			for _, d := range ds {
-				names = append(names, d.Name)
+				names = append(names, d.Name())
 			}
 
 			return nil, errors.Errorf("multiple Deployments %q found in namespace %q", names, namespace)
 		}
 
-		deployment = &ds[0]
+		deployment = ds[0]
 	} else {
 		d, err := c.GetDeployment(namespace, name)
 		if err != nil {
@@ -117,40 +117,47 @@ func (c *Client) DetectTargetDeployment(namespace, name string) (*v1beta1.Deploy
 }
 
 // GetDeployment returns a deployment
-func (c *Client) GetDeployment(namespace, name string) (*v1beta1.Deployment, error) {
+func (c *Client) GetDeployment(namespace, name string) (*Deployment, error) {
 	deployment, err := c.clientset.ExtensionsV1beta1().Deployments(namespace).Get(name)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to retrieve Deployment %q", name)
 	}
 
-	return deployment, nil
+	return NewDeployment(deployment), nil
 }
 
 // ListDeployments returns the list of deployment
-func (c *Client) ListDeployments(namespace string) ([]v1beta1.Deployment, error) {
+func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 	deployments, err := c.clientset.ExtensionsV1beta1().Deployments(namespace).List(v1.ListOptions{})
 	if err != nil {
-		return []v1beta1.Deployment{}, errors.Wrap(err, "failed to retrieve Deployments")
+		return []*Deployment{}, errors.Wrap(err, "failed to retrieve Deployments")
 	}
 
-	return deployments.Items, nil
+	ds := []*Deployment{}
+
+	// `for _, d := range deployments` uses the same pointer in `d`
+	for i := range deployments.Items {
+		ds = append(ds, NewDeployment(&deployments.Items[i]))
+	}
+
+	return ds, nil
 }
 
 // SetImage sets new image to the given deployments
-func (c *Client) SetImage(deployment *v1beta1.Deployment, container, image string) (*v1beta1.Deployment, error) {
+func (c *Client) SetImage(deployment *Deployment, container, image string) (*Deployment, error) {
 	d := &v1beta1.Deployment{}
-	*d = *deployment
+	*d = *deployment.raw
 
 	replaceImage(d, container, image)
 
 	// TODO: use PATCH for optimized update
 	//       original `kubectl set-image` uses PATCH
-	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace).Update(d)
+	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Update(d)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name)
 	}
 
-	return newd, nil
+	return NewDeployment(newd), nil
 }
 
 func replaceImage(deployment *v1beta1.Deployment, container, image string) {

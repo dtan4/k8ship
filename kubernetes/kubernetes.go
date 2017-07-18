@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -24,10 +23,10 @@ func DefaultNamespace() string {
 }
 
 // ContainerImageFromDeployment returns image name of the given container
-func ContainerImageFromDeployment(deployment *v1beta1.Deployment, container string) string {
-	for _, c := range deployment.Spec.Template.Spec.Containers {
-		if c.Name == container {
-			return c.Image
+func ContainerImageFromDeployment(deployment *Deployment, container string) string {
+	for _, c := range deployment.Containers() {
+		if c.Name() == container {
+			return c.Image()
 		}
 	}
 
@@ -35,10 +34,10 @@ func ContainerImageFromDeployment(deployment *v1beta1.Deployment, container stri
 }
 
 // RepositoriesFromDeployment returns the reportories attached by 'github' annotation
-func RepositoriesFromDeployment(deployment *v1beta1.Deployment) (map[string]string, error) {
-	v, ok := deployment.Annotations[githubAnnotation]
+func RepositoriesFromDeployment(deployment *Deployment) (map[string]string, error) {
+	v, ok := deployment.Annotations()[githubAnnotation]
 	if !ok {
-		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", githubAnnotation, deployment.Name)
+		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", githubAnnotation, deployment.Name())
 	}
 
 	repos := map[string]string{}

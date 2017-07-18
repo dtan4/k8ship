@@ -10,18 +10,20 @@ import (
 )
 
 func TestContainerImageFromDeployment(t *testing.T) {
-	deployment := &v1beta1.Deployment{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      "deployment",
-			Namespace: "default",
-		},
-		Spec: v1beta1.DeploymentSpec{
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						v1.Container{
-							Name:  "rails",
-							Image: "my-rails:v3",
+	deployment := &Deployment{
+		raw: &v1beta1.Deployment{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "deployment",
+				Namespace: "default",
+			},
+			Spec: v1beta1.DeploymentSpec{
+				Template: v1.PodTemplateSpec{
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							v1.Container{
+								Name:  "rails",
+								Image: "my-rails:v3",
+							},
 						},
 					},
 				},
@@ -52,18 +54,20 @@ func TestContainerImageFromDeployment(t *testing.T) {
 
 func TestRepositoriesFromDeployment(t *testing.T) {
 	testcases := []struct {
-		deployment *v1beta1.Deployment
+		deployment *Deployment
 		expectErr  bool
 		expected   map[string]string
 		errMsg     string
 	}{
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-					Annotations: map[string]string{
-						"github": "rails=rails/rails",
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "rails=rails/rails",
+						},
 					},
 				},
 			},
@@ -73,12 +77,14 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 			},
 		},
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-					Annotations: map[string]string{
-						"github": "rails=rails/rails,foobar=dtan4/foobar",
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "rails=rails/rails,foobar=dtan4/foobar",
+						},
 					},
 				},
 			},
@@ -89,23 +95,27 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 			},
 		},
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:        "deployment",
-					Namespace:   "default",
-					Annotations: map[string]string{},
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:        "deployment",
+						Namespace:   "default",
+						Annotations: map[string]string{},
+					},
 				},
 			},
 			expectErr: true,
 			errMsg:    `annotation "github" not found in Deployment "deployment"`,
 		},
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-					Annotations: map[string]string{
-						"github": "rails=rails/rails,",
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "rails=rails/rails,",
+						},
 					},
 				},
 			},
@@ -113,12 +123,14 @@ func TestRepositoriesFromDeployment(t *testing.T) {
 			errMsg:    `invalid annotation "github" value "", must be "container=owner/repo"`,
 		},
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-					Annotations: map[string]string{
-						"github": "foobarbaz",
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "foobarbaz",
+						},
 					},
 				},
 			},

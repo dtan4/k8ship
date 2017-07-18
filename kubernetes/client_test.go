@@ -10,17 +10,19 @@ import (
 )
 
 func TestDetectTargetContainer_with_name(t *testing.T) {
-	deployment := &v1beta1.Deployment{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      "deployment",
-			Namespace: "default",
-		},
-		Spec: v1beta1.DeploymentSpec{
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						v1.Container{
-							Name: "rails",
+	deployment := &Deployment{
+		raw: &v1beta1.Deployment{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "deployment",
+				Namespace: "default",
+			},
+			Spec: v1beta1.DeploymentSpec{
+				Template: v1.PodTemplateSpec{
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							v1.Container{
+								Name: "rails",
+							},
 						},
 					},
 				},
@@ -64,8 +66,8 @@ func TestDetectTargetContainer_with_name(t *testing.T) {
 				continue
 			}
 
-			if got.Name != tc.name {
-				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			if got.Name() != tc.name {
+				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name())
 			}
 		}
 	}
@@ -73,22 +75,24 @@ func TestDetectTargetContainer_with_name(t *testing.T) {
 
 func TestDetectTargetContainer_without_name(t *testing.T) {
 	testcases := []struct {
-		deployment *v1beta1.Deployment
+		deployment *Deployment
 		expectErr  bool
 		errMsg     string
 	}{
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-				},
-				Spec: v1beta1.DeploymentSpec{
-					Template: v1.PodTemplateSpec{
-						Spec: v1.PodSpec{
-							Containers: []v1.Container{
-								v1.Container{
-									Name: "rails",
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+					},
+					Spec: v1beta1.DeploymentSpec{
+						Template: v1.PodTemplateSpec{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									v1.Container{
+										Name: "rails",
+									},
 								},
 							},
 						},
@@ -98,20 +102,22 @@ func TestDetectTargetContainer_without_name(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			deployment: &v1beta1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "deployment",
-					Namespace: "default",
-				},
-				Spec: v1beta1.DeploymentSpec{
-					Template: v1.PodTemplateSpec{
-						Spec: v1.PodSpec{
-							Containers: []v1.Container{
-								v1.Container{
-									Name: "rails",
-								},
-								v1.Container{
-									Name: "foobar",
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+					},
+					Spec: v1beta1.DeploymentSpec{
+						Template: v1.PodTemplateSpec{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									v1.Container{
+										Name: "rails",
+									},
+									v1.Container{
+										Name: "foobar",
+									},
 								},
 							},
 						},
@@ -196,8 +202,8 @@ func TestDetectTargetDeployment_with_name(t *testing.T) {
 				continue
 			}
 
-			if got.Name != tc.name {
-				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			if got.Name() != tc.name {
+				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name())
 			}
 		}
 	}
@@ -317,8 +323,8 @@ func TestGetDeployment(t *testing.T) {
 				continue
 			}
 
-			if got.Name != tc.name {
-				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name)
+			if got.Name() != tc.name {
+				t.Errorf("expected deployment: %q, got: %q", tc.name, got.Name())
 			}
 		}
 	}
@@ -361,7 +367,7 @@ func TestListDeployments(t *testing.T) {
 }
 
 func TestSetImage(t *testing.T) {
-	deployment := &v1beta1.Deployment{
+	raw := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      "deployment",
 			Namespace: "default",
@@ -379,8 +385,11 @@ func TestSetImage(t *testing.T) {
 			},
 		},
 	}
+	deployment := &Deployment{
+		raw: raw,
+	}
 
-	clientset := fake.NewSimpleClientset(deployment)
+	clientset := fake.NewSimpleClientset(raw)
 	client := &Client{
 		clientset: clientset,
 	}
@@ -394,7 +403,7 @@ func TestSetImage(t *testing.T) {
 		return
 	}
 
-	gotImage := got.Spec.Template.Spec.Containers[0].Image
+	gotImage := got.Containers()[0].Image()
 	if gotImage != image {
 		t.Errorf("expected image: %q, got: %q", image, gotImage)
 	}
