@@ -1,10 +1,12 @@
 package kubernetes
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -145,31 +147,25 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 
 // SetImage sets new image to the given deployments
 func (c *Client) SetImage(deployment *Deployment, container, image string) (*Deployment, error) {
-	d := &v1beta1.Deployment{}
-	*d = *deployment.raw
+	patch := fmt.Sprintf(`{
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "%s",
+            "image": "%s"
+          }
+        ]
+      }
+    }
+  }
+}`, container, image)
 
-	replaceImage(d, container, image)
-
-	// TODO: use PATCH for optimized update
-	//       original `kubectl set-image` uses PATCH
-	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Update(d)
+	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name)
 	}
 
 	return NewDeployment(newd), nil
-}
-
-func replaceImage(deployment *v1beta1.Deployment, container, image string) {
-	containers := []v1.Container{}
-
-	for _, c := range deployment.Spec.Template.Spec.Containers {
-		if c.Name == container {
-			c.Image = image
-		}
-
-		containers = append(containers, c)
-	}
-
-	deployment.Spec.Template.Spec.Containers = containers
 }
