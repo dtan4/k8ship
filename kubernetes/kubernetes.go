@@ -1,15 +1,8 @@
 package kubernetes
 
 import (
-	"strings"
-
-	"github.com/pkg/errors"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
-)
-
-const (
-	githubAnnotation = "github"
 )
 
 // DefaultConfigFile returns the default kubeconfig file path
@@ -31,24 +24,4 @@ func ContainerImageFromDeployment(deployment *Deployment, container string) stri
 	}
 
 	return ""
-}
-
-// RepositoriesFromDeployment returns the reportories attached by 'github' annotation
-func RepositoriesFromDeployment(deployment *Deployment) (map[string]string, error) {
-	v, ok := deployment.Annotations()[githubAnnotation]
-	if !ok {
-		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", githubAnnotation, deployment.Name())
-	}
-
-	repos := map[string]string{}
-
-	for _, f := range strings.Split(v, ",") {
-		ss := strings.Split(f, "=")
-		if len(ss) != 2 {
-			return map[string]string{}, errors.Errorf(`invalid annotation %q value %q, must be "container=owner/repo"`, githubAnnotation, f)
-		}
-		repos[ss[0]] = ss[1]
-	}
-
-	return repos, nil
 }

@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"k8s.io/client-go/pkg/api/v1"
@@ -209,5 +210,116 @@ func TestDeploymentNamespace(t *testing.T) {
 	expected := "default"
 	if got := deployment.Namespace(); got != expected {
 		t.Errorf("expected: %q, got: %q", expected, got)
+	}
+}
+
+func TestRepositories(t *testing.T) {
+	testcases := []struct {
+		deployment *Deployment
+		expectErr  bool
+		expected   map[string]string
+		errMsg     string
+	}{
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "rails=rails/rails",
+						},
+					},
+				},
+			},
+			expectErr: false,
+			expected: map[string]string{
+				"rails": "rails/rails",
+			},
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "rails=rails/rails,foobar=dtan4/foobar",
+						},
+					},
+				},
+			},
+			expectErr: false,
+			expected: map[string]string{
+				"rails":  "rails/rails",
+				"foobar": "dtan4/foobar",
+			},
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:        "deployment",
+						Namespace:   "default",
+						Annotations: map[string]string{},
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `annotation "github" not found in Deployment "deployment"`,
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "rails=rails/rails,",
+						},
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `invalid annotation "github" value "", must be "container=owner/repo"`,
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"github": "foobarbaz",
+						},
+					},
+				},
+			},
+			expectErr: true,
+			errMsg:    `invalid annotation "github" value "foobarbaz", must be "container=owner/repo"`,
+		},
+	}
+
+	for _, tc := range testcases {
+		got, err := tc.deployment.Repositories()
+
+		if tc.expectErr {
+			if err == nil {
+				t.Errorf("got no error")
+				continue
+			}
+
+			if !strings.Contains(err.Error(), tc.errMsg) {
+				t.Errorf("error %q does not contain %q", err.Error(), tc.errMsg)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("got error: %s", err)
+			}
+
+			if !reflect.DeepEqual(got, tc.expected) {
+				t.Errorf("expected: %q, got: %q", tc.expected, got)
+			}
+		}
 	}
 }

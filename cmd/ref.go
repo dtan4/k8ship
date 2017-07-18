@@ -48,7 +48,7 @@ func doRef(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to detect target container")
 	}
 
-	repos, err := kubernetes.RepositoriesFromDeployment(deployment)
+	repos, err := deployment.Repositories()
 	if err != nil {
 		return errors.Wrap(err, "failed to extract repositories from deployment")
 	}

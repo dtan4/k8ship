@@ -1,7 +1,14 @@
 package kubernetes
 
 import (
+	"strings"
+
+	"github.com/pkg/errors"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
+)
+
+const (
+	githubAnnotation = "github"
 )
 
 // Deployment represents the wrapper of Kubernetes Deployment
@@ -45,4 +52,24 @@ func (d *Deployment) Name() string {
 // Namespace returns the namespace of Deployment
 func (d *Deployment) Namespace() string {
 	return d.raw.Namespace
+}
+
+// Repositories returns the reportories attached by 'github' annotation
+func (d *Deployment) Repositories() (map[string]string, error) {
+	v, ok := d.Annotations()[githubAnnotation]
+	if !ok {
+		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", githubAnnotation, d.Name())
+	}
+
+	repos := map[string]string{}
+
+	for _, f := range strings.Split(v, ",") {
+		ss := strings.Split(f, "=")
+		if len(ss) != 2 {
+			return map[string]string{}, errors.Errorf(`invalid annotation %q value %q, must be "container=owner/repo"`, githubAnnotation, f)
+		}
+		repos[ss[0]] = ss[1]
+	}
+
+	return repos, nil
 }
