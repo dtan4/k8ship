@@ -88,11 +88,27 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 
 	newImage := strings.Split(image, ":")[0] + ":" + sha1
 
-	for _, d := range targetDeployments {
-		fmt.Printf("deployment: %q, container: %q\n", d.Name(), targetContainers[d.Name()].Name())
+	if deployOpts.dryRun {
+		for _, d := range targetDeployments {
+			c := targetContainers[d.Name()]
+
+			fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", d.Name(), c.Name())
+			fmt.Printf("[dry-run]  before: %s\n", c.Image())
+			fmt.Printf("[dry-run]   after: %s\n", newImage)
+		}
+	} else {
+		for _, d := range targetDeployments {
+			c := targetContainers[d.Name()]
+
+			fmt.Printf("deploy to (deployment: %q, container: %q)\n", d.Name(), c.Name())
+			fmt.Printf("  before: %s\n", c.Image())
+			fmt.Printf("   after: %s\n", newImage)
+
+			if _, err := k8sClient.SetImage(d, c.Name(), newImage); err != nil {
+				return errors.Wrap(err, "failed to set image")
+			}
+		}
 	}
-	fmt.Printf("repo: %q\n", repo)
-	fmt.Printf("image: %q => %q\n", image, newImage)
 
 	return nil
 }
