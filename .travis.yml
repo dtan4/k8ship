@@ -3,6 +3,7 @@ go:
   - '1.8.3'
 install:
   - make deps
+  - make install
 script:
   - make ci-test
 after_success:
