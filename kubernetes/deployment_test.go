@@ -139,6 +139,90 @@ func TestContainerImageFromDeployment(t *testing.T) {
 	}
 }
 
+func TestIsDeployTarget(t *testing.T) {
+	testcases := []struct {
+		deployment *Deployment
+		expected   bool
+	}{
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"deploy/target": "1",
+						},
+						Labels: map[string]string{
+							"app":   "rails-app",
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"deploy/target": "true",
+						},
+						Labels: map[string]string{
+							"app":   "rails-app",
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"deploy/target": "false",
+						},
+						Labels: map[string]string{
+							"app":   "rails-app",
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			deployment: &Deployment{
+				raw: &v1beta1.Deployment{
+					ObjectMeta: v1.ObjectMeta{
+						Name:        "deployment",
+						Namespace:   "default",
+						Annotations: map[string]string{},
+						Labels: map[string]string{
+							"app":   "rails-app",
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		if got := tc.deployment.IsDeployTarget(); got != tc.expected {
+			t.Errorf("expected: %t, got: %t", tc.expected, got)
+		}
+	}
+}
+
 func TestDeploymentLabels(t *testing.T) {
 	raw := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{

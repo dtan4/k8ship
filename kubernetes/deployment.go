@@ -8,7 +8,13 @@ import (
 )
 
 const (
+	deployTargetAnnotation = "deploy/target"
+
 	githubAnnotation = "github"
+)
+
+var (
+	deployTargetAnnotationTrue = []string{"1", "true"}
 )
 
 // Deployment represents the wrapper of Kubernetes Deployment
@@ -48,6 +54,18 @@ func (d *Deployment) ContainerImage(container string) string {
 	}
 
 	return ""
+}
+
+// IsDeployTarget returns whether this deployment is deploy target or not
+// - has `deploy/target: 1` or `deploy/target: true` annotation
+func (d *Deployment) IsDeployTarget() bool {
+	for _, v := range deployTargetAnnotationTrue {
+		if d.raw.Annotations[deployTargetAnnotation] == v {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Labels returns the labels of Deployment
