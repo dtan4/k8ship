@@ -53,13 +53,13 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if len(deployments) == 0 {
+	if len(targetDeployments) == 0 {
 		return errors.New("no target Deployments found")
 	}
 
 	targetContainers := map[string]*kubernetes.Container{}
 
-	for _, d := range deployments {
+	for _, d := range targetDeployments {
 		c, err := d.DeployTargetContainer()
 		if err != nil {
 			return errors.Wrapf(err, "failed to retrieve deploy target container of Deployment %q", d.Name())
