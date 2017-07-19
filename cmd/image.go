@@ -57,6 +57,9 @@ func doImage(cmd *cobra.Command, args []string) error {
 		); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
+
+		fmt.Printf("\n")
+		fmt.Printf("deployment successfully updated! check rollout status by `kubectl rollout status deployment/DEPLOYMENT --namespace %s`\n", imageOpts.namespace)
 	}
 
 	return nil
