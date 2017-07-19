@@ -1,4 +1,10 @@
-# [v0.2.1](https://github.com/dtan4/k8ship/releases/tag/v0.2.0) (2017-07-19)
+# [v0.2.1](https://github.com/dtan4/k8ship/releases/tag/v0.2.2) (2017-07-19)
+
+## Features
+
+- Add annotation prefix [#12](https://github.com/dtan4/k8ship/pull/12)
+
+# [v0.2.1](https://github.com/dtan4/k8ship/releases/tag/v0.2.1) (2017-07-19)
 
 ## Features
 
