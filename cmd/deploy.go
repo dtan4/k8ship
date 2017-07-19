@@ -128,7 +128,9 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		for _, d := range targetDeployments {
 			c := targetContainers[d.Name()]
 
-			if _, err := k8sClient.SetImage(d, c.Name(), newImage, composeDeployCause(deployOpts.ref, deployOpts.namespace)); err != nil {
+			if _, err := k8sClient.SetImage(
+				d, c.Name(), newImage, composeDeployCause(deployOpts.ref, deployOpts.image, deployOpts.tag, deployOpts.namespace),
+			); err != nil {
 				return errors.Wrap(err, "failed to set image")
 			}
 		}
@@ -137,8 +139,20 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func composeDeployCause(ref, namespace string) string {
-	return fmt.Sprintf(`k8ship deploy %s --namespace "%s"`, ref, namespace)
+func composeDeployCause(ref, image, tag, namespace string) string {
+	if ref != "" {
+		return fmt.Sprintf(`k8ship deploy %s --namespace "%s"`, ref, namespace)
+	}
+
+	if image != "" {
+		return fmt.Sprintf(`k8ship deploy --image %s --namespace "%s"`, image, namespace)
+	}
+
+	if tag != "" {
+		return fmt.Sprintf(`k8ship deploy --tag %s --namespace "%s"`, tag, namespace)
+	}
+
+	return ""
 }
 
 func init() {
