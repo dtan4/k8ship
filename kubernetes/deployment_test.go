@@ -15,8 +15,8 @@ func TestDeploymentAnnotations(t *testing.T) {
 			Name:      "deployment",
 			Namespace: "default",
 			Annotations: map[string]string{
-				"deploy/target":           "1",
-				"deploy/target-container": "rails",
+				"deploy-target":           "1",
+				"deploy-target-container": "rails",
 				"github":                  "dtan4/rails-app",
 			},
 			Labels: map[string]string{
@@ -42,8 +42,8 @@ func TestDeploymentAnnotations(t *testing.T) {
 	}
 
 	expected := map[string]string{
-		"deploy/target":           "1",
-		"deploy/target-container": "rails",
+		"deploy-target":           "1",
+		"deploy-target-container": "rails",
 		"github":                  "dtan4/rails-app",
 	}
 	if got := deployment.Annotations(); !reflect.DeepEqual(got, expected) {
@@ -57,8 +57,8 @@ func TestDeploymentContainers(t *testing.T) {
 			Name:      "deployment",
 			Namespace: "default",
 			Annotations: map[string]string{
-				"deploy/target":           "1",
-				"deploy/target-container": "rails",
+				"deploy-target":           "1",
+				"deploy-target-container": "rails",
 				"github":                  "dtan4/rails-app",
 			},
 			Labels: map[string]string{
@@ -153,8 +153,8 @@ func TestDeployTargetContainer(t *testing.T) {
 						Name:      "deployment",
 						Namespace: "default",
 						Annotations: map[string]string{
-							"deploy/target":           "1",
-							"deploy/target-container": "rails",
+							"deploy-target":           "1",
+							"deploy-target-container": "rails",
 						},
 					},
 					Spec: v1beta1.DeploymentSpec{
@@ -181,8 +181,8 @@ func TestDeployTargetContainer(t *testing.T) {
 						Name:      "deployment",
 						Namespace: "default",
 						Annotations: map[string]string{
-							"deploy/target":           "1",
-							"deploy/target-container": "nginx",
+							"deploy-target":           "1",
+							"deploy-target-container": "nginx",
 						},
 					},
 					Spec: v1beta1.DeploymentSpec{
@@ -225,7 +225,7 @@ func TestDeployTargetContainer(t *testing.T) {
 				},
 			},
 			expectErr: true,
-			errMsg:    `annotation "deploy/target-container" does not exist in Deployment "deployment"`,
+			errMsg:    `annotation "deploy-target-container" does not exist in Deployment "deployment"`,
 		},
 	}
 
@@ -265,7 +265,7 @@ func TestIsDeployTarget(t *testing.T) {
 						Name:      "deployment",
 						Namespace: "default",
 						Annotations: map[string]string{
-							"deploy/target": "1",
+							"deploy-target": "1",
 						},
 						Labels: map[string]string{
 							"app":   "rails-app",
@@ -283,7 +283,7 @@ func TestIsDeployTarget(t *testing.T) {
 						Name:      "deployment",
 						Namespace: "default",
 						Annotations: map[string]string{
-							"deploy/target": "true",
+							"deploy-target": "true",
 						},
 						Labels: map[string]string{
 							"app":   "rails-app",
@@ -301,7 +301,7 @@ func TestIsDeployTarget(t *testing.T) {
 						Name:      "deployment",
 						Namespace: "default",
 						Annotations: map[string]string{
-							"deploy/target": "false",
+							"deploy-target": "false",
 						},
 						Labels: map[string]string{
 							"app":   "rails-app",
@@ -343,8 +343,8 @@ func TestDeploymentLabels(t *testing.T) {
 			Name:      "deployment",
 			Namespace: "default",
 			Annotations: map[string]string{
-				"deploy/target":           "1",
-				"deploy/target-container": "rails",
+				"deploy-target":           "1",
+				"deploy-target-container": "rails",
 				"github":                  "dtan4/rails-app",
 			},
 			Labels: map[string]string{
@@ -384,8 +384,8 @@ func TestDeploymentName(t *testing.T) {
 			Name:      "deployment",
 			Namespace: "default",
 			Annotations: map[string]string{
-				"deploy/target":           "1",
-				"deploy/target-container": "rails",
+				"deploy-target":           "1",
+				"deploy-target-container": "rails",
 				"github":                  "dtan4/rails-app",
 			},
 			Labels: map[string]string{
@@ -422,8 +422,8 @@ func TestDeploymentNamespace(t *testing.T) {
 			Name:      "deployment",
 			Namespace: "default",
 			Annotations: map[string]string{
-				"deploy/target":           "1",
-				"deploy/target-container": "rails",
+				"deploy-target":           "1",
+				"deploy-target-container": "rails",
 				"github":                  "dtan4/rails-app",
 			},
 			Labels: map[string]string{

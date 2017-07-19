@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	deployTargetAnnotation          = "deploy/target"
-	deployTargetContainerAnnotation = "deploy/target-container"
+	deployTargetAnnotation          = "deploy-target"
+	deployTargetContainerAnnotation = "deploy-target-container"
 
 	githubAnnotation = "github"
 )
@@ -60,11 +60,11 @@ func (d *Deployment) ContainerImage(container string) string {
 }
 
 // DeployTargetContainer returns
-// - specified in `deploy/target-container` annotation
+// - specified in `deploy-target-container` annotation
 func (d *Deployment) DeployTargetContainer() (*Container, error) {
 	v, ok := d.Annotations()[d.annotationPrefix+deployTargetContainerAnnotation]
 	if !ok {
-		return nil, errors.Errorf(`annotation "deploy/target-container" does not exist in Deployment %q`, d.Name())
+		return nil, errors.Errorf(`annotation "deploy-target-container" does not exist in Deployment %q`, d.Name())
 	}
 
 	for _, c := range d.Containers() {
@@ -77,7 +77,7 @@ func (d *Deployment) DeployTargetContainer() (*Container, error) {
 }
 
 // IsDeployTarget returns whether this deployment is deploy target or not
-// - has `deploy/target: 1` or `deploy/target: true` annotation
+// - has `deploy-target: 1` or `deploy-target: true` annotation
 func (d *Deployment) IsDeployTarget() bool {
 	for _, v := range deployTargetAnnotationTrue {
 		if d.raw.Annotations[d.annotationPrefix+deployTargetAnnotation] == v {
