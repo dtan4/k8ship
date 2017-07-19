@@ -17,8 +17,9 @@ var RootCmd = &cobra.Command{
 }
 
 var rootOpts = struct {
-	context    string
-	kubeconfig string
+	annotationPrefix string
+	context          string
+	kubeconfig       string
 }{}
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,12 +34,17 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	RootCmd.PersistentFlags().StringVar(&rootOpts.annotationPrefix, "annotation-prefix", "", "annotation prefix")
 	RootCmd.PersistentFlags().StringVar(&rootOpts.context, "context", "", "Kubernetes context")
 	RootCmd.PersistentFlags().StringVar(&rootOpts.kubeconfig, "kubeconfig", "", "kubeconfig path")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	if rootOpts.annotationPrefix == "" {
+		rootOpts.annotationPrefix = os.Getenv("K8SHIP_ANNOTATION_PREFIX")
+	}
+
 	if rootOpts.kubeconfig == "" {
 		if os.Getenv("KUBECONFIG") == "" {
 			rootOpts.kubeconfig = kubernetes.DefaultConfigFile()

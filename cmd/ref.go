@@ -33,7 +33,7 @@ func doRef(cmd *cobra.Command, args []string) error {
 	}
 	ref := args[0]
 
-	k8sClient, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	k8sClient, err := kubernetes.NewClient(rootOpts.annotationPrefix, rootOpts.kubeconfig, rootOpts.context)
 	if err != nil {
 		return errors.Wrap(err, "failed to create Kubernetes client")
 	}
