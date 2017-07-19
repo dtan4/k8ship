@@ -37,7 +37,7 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		if deployOpts.image == "" && deployOpts.tag == "" {
 			return errors.New("target image (--image) or tag (--tag) must be specified")
 		}
-	} else if len(args) != 1 {
+	} else if len(args) == 1 {
 		deployOpts.ref = args[0]
 	} else {
 		return errors.New("--image, --tag, or ref (branch, full commit SHA-1 or short commit SHA-1) must be given")
