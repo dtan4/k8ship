@@ -17,12 +17,13 @@ const (
 
 // Client represents the wrapper of Kubernetes API client
 type Client struct {
-	clientConfig clientcmd.ClientConfig
-	clientset    kubernetes.Interface
+	annotationPrefix string
+	clientConfig     clientcmd.ClientConfig
+	clientset        kubernetes.Interface
 }
 
 // NewClient creates Client object using local kubecfg
-func NewClient(kubeconfig, context string) (*Client, error) {
+func NewClient(annotationPrefix string, kubeconfig, context string) (*Client, error) {
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
 		&clientcmd.ConfigOverrides{CurrentContext: context})
@@ -38,13 +39,14 @@ func NewClient(kubeconfig, context string) (*Client, error) {
 	}
 
 	return &Client{
-		clientConfig: clientConfig,
-		clientset:    clientset,
+		annotationPrefix: annotationPrefix,
+		clientConfig:     clientConfig,
+		clientset:        clientset,
 	}, nil
 }
 
 // NewClientInCluster creates Client object in Kubernetes cluster
-func NewClientInCluster() (*Client, error) {
+func NewClientInCluster(annotationPrefix string) (*Client, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load kubeconfig in cluster")
@@ -129,7 +131,7 @@ func (c *Client) GetDeployment(namespace, name string) (*Deployment, error) {
 		return nil, errors.Wrapf(err, "failed to retrieve Deployment %q", name)
 	}
 
-	return NewDeployment(deployment), nil
+	return NewDeployment(c.annotationPrefix, deployment), nil
 }
 
 // ListDeployments returns the list of deployment
@@ -143,7 +145,7 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 
 	// `for _, d := range deployments` uses the same pointer in `d`
 	for i := range deployments.Items {
-		ds = append(ds, NewDeployment(&deployments.Items[i]))
+		ds = append(ds, NewDeployment(c.annotationPrefix, &deployments.Items[i]))
 	}
 
 	return ds, nil
@@ -176,5 +178,5 @@ func (c *Client) SetImage(deployment *Deployment, container, image, cause string
 		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name())
 	}
 
-	return NewDeployment(newd), nil
+	return NewDeployment(c.annotationPrefix, newd), nil
 }

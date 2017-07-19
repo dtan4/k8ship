@@ -43,7 +43,7 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		return errors.New("--image, --tag, or ref (branch, full commit SHA-1 or short commit SHA-1) must be given")
 	}
 
-	k8sClient, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	k8sClient, err := kubernetes.NewClient(rootOpts.annotationPrefix, rootOpts.kubeconfig, rootOpts.context)
 	if err != nil {
 		return errors.Wrap(err, "failed to create Kubernetes client")
 	}

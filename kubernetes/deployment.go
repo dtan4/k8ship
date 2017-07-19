@@ -20,13 +20,15 @@ var (
 
 // Deployment represents the wrapper of Kubernetes Deployment
 type Deployment struct {
-	raw *v1beta1.Deployment
+	annotationPrefix string
+	raw              *v1beta1.Deployment
 }
 
 // NewDeployment creates new Deployment object
-func NewDeployment(raw *v1beta1.Deployment) *Deployment {
+func NewDeployment(annotationPrefix string, raw *v1beta1.Deployment) *Deployment {
 	return &Deployment{
-		raw: raw,
+		annotationPrefix: annotationPrefix,
+		raw:              raw,
 	}
 }
 
@@ -60,7 +62,7 @@ func (d *Deployment) ContainerImage(container string) string {
 // DeployTargetContainer returns
 // - specified in `deploy/target-container` annotation
 func (d *Deployment) DeployTargetContainer() (*Container, error) {
-	v, ok := d.Annotations()[deployTargetContainerAnnotation]
+	v, ok := d.Annotations()[d.annotationPrefix+deployTargetContainerAnnotation]
 	if !ok {
 		return nil, errors.Errorf(`annotation "deploy/target-container" does not exist in Deployment %q`, d.Name())
 	}
@@ -78,7 +80,7 @@ func (d *Deployment) DeployTargetContainer() (*Container, error) {
 // - has `deploy/target: 1` or `deploy/target: true` annotation
 func (d *Deployment) IsDeployTarget() bool {
 	for _, v := range deployTargetAnnotationTrue {
-		if d.raw.Annotations[deployTargetAnnotation] == v {
+		if d.raw.Annotations[d.annotationPrefix+deployTargetAnnotation] == v {
 			return true
 		}
 	}
@@ -103,9 +105,9 @@ func (d *Deployment) Namespace() string {
 
 // Repositories returns the reportories attached by 'github' annotation
 func (d *Deployment) Repositories() (map[string]string, error) {
-	v, ok := d.Annotations()[githubAnnotation]
+	v, ok := d.Annotations()[d.annotationPrefix+githubAnnotation]
 	if !ok {
-		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", githubAnnotation, d.Name())
+		return map[string]string{}, errors.Errorf("annotation %q not found in Deployment %q", d.annotationPrefix+githubAnnotation, d.Name())
 	}
 
 	repos := map[string]string{}
@@ -113,7 +115,7 @@ func (d *Deployment) Repositories() (map[string]string, error) {
 	for _, f := range strings.Split(v, ",") {
 		ss := strings.Split(f, "=")
 		if len(ss) != 2 {
-			return map[string]string{}, errors.Errorf(`invalid annotation %q value %q, must be "container=owner/repo"`, githubAnnotation, f)
+			return map[string]string{}, errors.Errorf(`invalid annotation %q value %q, must be "container=owner/repo"`, d.annotationPrefix+githubAnnotation, f)
 		}
 		repos[ss[0]] = ss[1]
 	}

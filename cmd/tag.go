@@ -29,7 +29,7 @@ func doTag(cmd *cobra.Command, args []string) error {
 	}
 	tag := args[0]
 
-	client, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
+	client, err := kubernetes.NewClient(rootOpts.annotationPrefix, rootOpts.kubeconfig, rootOpts.context)
 	if err != nil {
 		return errors.Wrap(err, "failed to create Kubernetes client")
 	}
