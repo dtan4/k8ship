@@ -1,3 +1,12 @@
+# [v0.3.0](https://github.com/dtan4/k8ship/releases/tag/v0.3.0) (2017-07-19)
+
+## Breaking changes
+
+- Annotation nae has been changed
+  - Remove / from annotation [#14](https://github.com/dtan4/k8ship/pull/14)
+  - `<prefix>deploy/target` -> `<prefix>deploy-target`
+  - `<prefix>deploy/target-container` -> `<prefix>deploy-target-container`
+
 # [v0.2.1](https://github.com/dtan4/k8ship/releases/tag/v0.2.2) (2017-07-19)
 
 ## Features

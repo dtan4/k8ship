@@ -1,5 +1,5 @@
 NAME      := k8ship
-VERSION   := v0.2.2
+VERSION   := v0.3.0
 REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
