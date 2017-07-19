@@ -14,7 +14,7 @@ import (
 
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
-	Use:   "deploy",
+	Use:   "deploy [BRANCH|COMMIT_SHA1]",
 	Short: "Deploy",
 	RunE:  doDeploy,
 }
@@ -22,14 +22,26 @@ var deployCmd = &cobra.Command{
 var deployOpts = struct {
 	accessToken string
 	dryRun      bool
+	image       string
 	namespace   string
+	ref         string
+	tag         string
 }{}
 
 func doDeploy(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		return errors.New("ref (branch, full commit SHA-1 or short commit SHA-1) must be given")
+	if len(args) == 0 {
+		if deployOpts.image != "" && deployOpts.tag != "" {
+			return errors.New("both target image and tag cannot be specified simultaneously")
+		}
+
+		if deployOpts.image == "" && deployOpts.tag == "" {
+			return errors.New("target image (--image) or tag (--tag) must be specified")
+		}
+	} else if len(args) != 1 {
+		deployOpts.ref = args[0]
+	} else {
+		return errors.New("--image, --tag, or ref (branch, full commit SHA-1 or short commit SHA-1) must be given")
 	}
-	ref := args[0]
 
 	k8sClient, err := kubernetes.NewClient(rootOpts.kubeconfig, rootOpts.context)
 	if err != nil {
@@ -78,15 +90,27 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to retrieve target image")
 	}
 
-	ctx := context.Background()
-	ghClient := github.NewClient(ctx, refOpts.accessToken)
+	var newImage string
 
-	sha1, err := ghClient.CommitFronRef(repo, ref)
-	if err != nil {
-		return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", ref, repo)
+	if deployOpts.ref == "" {
+		if deployOpts.image != "" {
+			newImage = deployOpts.image
+		}
+
+		if deployOpts.tag != "" {
+			newImage = strings.Split(image, ":")[0] + ":" + deployOpts.tag
+		}
+	} else {
+		ctx := context.Background()
+		ghClient := github.NewClient(ctx, refOpts.accessToken)
+
+		sha1, err := ghClient.CommitFronRef(repo, deployOpts.ref)
+		if err != nil {
+			return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", deployOpts.ref, repo)
+		}
+
+		newImage = strings.Split(image, ":")[0] + ":" + sha1
 	}
-
-	newImage := strings.Split(image, ":")[0] + ":" + sha1
 
 	if deployOpts.dryRun {
 		for _, d := range targetDeployments {
@@ -104,7 +128,7 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		for _, d := range targetDeployments {
 			c := targetContainers[d.Name()]
 
-			if _, err := k8sClient.SetImage(d, c.Name(), newImage, composeDeployCause(ref, deployOpts.namespace)); err != nil {
+			if _, err := k8sClient.SetImage(d, c.Name(), newImage, composeDeployCause(deployOpts.ref, deployOpts.namespace)); err != nil {
 				return errors.Wrap(err, "failed to set image")
 			}
 		}
@@ -122,7 +146,9 @@ func init() {
 
 	deployCmd.Flags().StringVar(&deployOpts.accessToken, "access-token", "", "GitHub access token")
 	deployCmd.Flags().BoolVar(&deployOpts.dryRun, "dry-run", false, "dry run")
+	deployCmd.Flags().StringVar(&deployOpts.image, "image", "", "image to deploy")
 	deployCmd.Flags().StringVarP(&deployOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
+	deployCmd.Flags().StringVar(&deployOpts.tag, "tag", "", "image tag to deploy")
 
 	if deployOpts.accessToken == "" {
 		deployOpts.accessToken = os.Getenv("GITHUB_ACCESS_TOKEN")
