@@ -1,3 +1,10 @@
+# [v0.2.1](https://github.com/dtan4/k8ship/releases/tag/v0.2.0) (2017-07-19)
+
+## Features
+
+- Print finish message [#10](https://github.com/dtan4/k8ship/pull/10)
+- Add `k8ship deploy --tag` and `k8ship deploy --image` [#9](https://github.com/dtan4/k8ship/pull/9)
+
 # [v0.2.0](https://github.com/dtan4/k8ship/releases/tag/v0.2.0) (2017-07-18)
 
 ## Features
