@@ -35,19 +35,23 @@ $ k8ship image dtan4/foo:v3 -d web
 
 ### `k8ship ref`
 
-Deploy with Git commit reference (branch name / commit SHA-1 value).
+Deploy with Git commit reference (branch name | tag | commit SHA-1 value).
 
-To deploy branch `topic/foo` to Deployment `web`:
+To deploy branch `topic/foo` (the latest commit: `fae7c9313f39c382c5051f182bbd281d36368618`) to Deployment `web`:
 
 ```sh-session
 $ k8ship ref topic/foo -d web
 ```
+
+Docker image with the tag `fae7c9313f39c382c5051f182bbd281d36368618` will be deployed.
 
 To deploy commit `fae7c93` to Deployment `app`:
 
 ```sh-session
 $ k8ship ref topic/foo -d app
 ```
+
+This command does the same as the above.
 
 ### `k8ship tag`
 
