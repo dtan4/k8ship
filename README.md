@@ -5,6 +5,68 @@
 
 Deploy image to Kubernetes
 
+## Requirements
+
+- Kubernetes 1.3 or above
+- Docker images are tagged with full-qualified Git commit SHA-1 value
+
+## Usage
+
+### `k8ship deploy`
+
+Deploy with Git commit reference (branch name / commit SHA-1 value).
+Target deployment and container are detected automatically from Deployment manifest.
+
+To deploy Docker image `dtan4/foo:v3`:
+
+```sh-session
+$ k8ship image dtan4/foo:v3
+```
+
+### `k8ship image`
+
+Deploy with Docker image.
+
+To deploy Docker image `dtan4/foo:v3` to Deployment `web`:
+
+```sh-session
+$ k8ship image dtan4/foo:v3 -d web
+```
+
+### `k8ship ref`
+
+Deploy with Git commit reference (branch name / commit SHA-1 value).
+
+To deploy branch `topic/foo` to Deployment `web`:
+
+```sh-session
+$ k8ship ref topic/foo -d web
+```
+
+To deploy commit `fae7c93` to Deployment `app`:
+
+```sh-session
+$ k8ship ref topic/foo -d app
+```
+
+### `k8ship tag`
+
+Deploy with Docker image tag.
+
+To deploy Docker image tagged `v3` to Deployment `web`:
+
+```sh-session
+$ k8ship tag dtan4/foo:v3 -d web
+```
+
+## Environment variables
+
+|Key|Description|Required|Example|
+|---|---|---|---|
+|`GITHUB_ACCESS_TOKEN`|GitHub access token|Required||
+|`K8SHIP_ANNOTATION_PREFIX`|Prefix of k8ship-specific annotation|Required|`example.com`|
+|`KUBECONFIG`|Path of kubeconfig|||
+
 ## Author
 
 Daisuke Fujita ([@dtan4](https://github.com/dtan4))
