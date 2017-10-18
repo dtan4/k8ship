@@ -154,6 +154,24 @@ $ k8ship tag dtan4/foo:v3 -d web
 |`K8SHIP_ANNOTATION_PREFIX`|Prefix of k8ship-specific annotation|Required|`example.com`|
 |`KUBECONFIG`|Path of kubeconfig|||
 
+## Development
+
+Go 1.8 or higher is requried.
+
+```bash
+$ go get -d github.com/dtan4/k8ship
+$ cd $GOPATH/src/github.com/dtan4/k8ship
+
+# retrieve dependencies
+$ make deps
+
+# build binary into bin/k8ship
+$ make
+
+# add new dependencies
+$ make update-deps
+```
+
 ## Author
 
 Daisuke Fujita ([@dtan4](https://github.com/dtan4))
