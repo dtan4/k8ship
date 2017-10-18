@@ -7,10 +7,90 @@ Deploy image to Kubernetes
 
 ## Requirements
 
-- Kubernetes 1.3 or above
-- Docker images are tagged with full-qualified Git commit SHA-1 value
+Kubernetes 1.3 or above
 
-## Usage
+## Isage
+
+### Docker image
+
+Docker images are tagged with full-qualified Git commit SHA-1 value
+
+e.g. `quay.io/dtan4/k8ship:0118ef0b66a6b9cb04a6547aca5a17d0ad601782`
+
+### Kubernetes Deployment
+
+To use k8ship deploy, you have to add a few annotations to your Deployment manifest.
+
+|Key|Description|
+|---|---|
+|`example.com/deploy-target`|`"true"/"false"` whether this Deployment can be deployed by k8ship|
+|`example.com/deploy-target-container`|Container name which will be updated by k8ship|
+|`example.com/github`|Pair of the target container and its GitHub repository. `<container>=<user>/<repo>`|
+
+NOTE: The prefix `example.com` can be replaced as you like via `K8SHIP_ANNOTATION_PREFIX`.
+
+You MUST add `example.com/deploy-target="true"` to deploy the Deployment using k8ship.
+
+#### 1 Pod, 1 Container
+
+If there is 1 container in the target Pod, all you need to do is that specifying GitHub repository by `example.com/github` annotation.
+
+Following manifest shows that `web` container will be deployed from `dtan4/awesome-app` repository.
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: awesome-app
+  labels:
+    name: awesome-app
+    role: web
+  annotations:
+    dtan4.net/deploy-target: "true"         # <===== ADDED
+    dtan4.net/github: web=dtan4/awesome-app # <===== ADDED
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - image: quay.io/dtan4/awesome-app:latest
+        name: web
+```
+
+#### 1 Pod, N Containers
+
+Let us assume that there is a Pod including web application and Nginx.
+
+k8ship can deploy one container per one Pod.
+You have to specify which container is k8ship deploy target.
+
+Following manifest shows that `web` container will be deployed from `dtan4/awesome-app` repository.
+`nginx` container will not be updated by k8ship.
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: awesome-app
+  labels:
+    name: awesome-app
+    role: web
+  annotations:
+    dtan4.net/deploy-target: "true"                # <===== ADDED
+    dtan4.net/deploy-target-container: web # <===== ADDED
+    dtan4.net/github: web=dtan4/awesome-app        # <===== ADDED
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - image: quay.io/dtan4/awesome-app:latest
+        name: web
+      - image: nginx:latest
+        name: nginx
+```
+
+## Command-line Usage
 
 ### `k8ship deploy`
 
