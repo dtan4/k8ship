@@ -33,8 +33,6 @@ You MUST add `example.com/deploy-target="true"` to deploy the Deployment using `
 
 #### 1 Pod, 1 Container
 
-If there is 1 container in the target Pod, all you need to do is that specifying GitHub repository by `example.com/github` annotation.
-
 Following manifest shows that `web` container will be deployed from `dtan4/awesome-app` repository.
 
 ```yaml
@@ -79,6 +77,7 @@ metadata:
   annotations:
     example.com/deploy-target: "true"          # <===== ADDED
     example.com/deploy-target-container: web   # <===== ADDED
+# BAD: example.com/deploy-target-container: web,nginx
     example.com/github: web=dtan4/awesome-app  # <===== ADDED
 spec:
   replicas: 1
