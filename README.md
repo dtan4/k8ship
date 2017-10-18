@@ -23,13 +23,13 @@ To use k8ship deploy, you have to add a few annotations to your Deployment manif
 
 |Key|Description|
 |---|---|
-|`example.com/deploy-target`|`"true"/"false"` whether this Deployment can be deployed by k8ship|
+|`example.com/deploy-target`|`"true"/"false"` whether this Deployment can be deployed by `k8ship deploy`|
 |`example.com/deploy-target-container`|Container name which will be updated by k8ship|
 |`example.com/github`|Pair of the target container and its GitHub repository. `<container>=<user>/<repo>`|
 
 NOTE: The prefix `example.com` can be replaced as you like via `K8SHIP_ANNOTATION_PREFIX`.
 
-You MUST add `example.com/deploy-target="true"` to deploy the Deployment using k8ship.
+You MUST add `example.com/deploy-target="true"` to deploy the Deployment using `k8ship deploy`.
 
 #### 1 Pod, 1 Container
 
@@ -46,8 +46,9 @@ metadata:
     name: awesome-app
     role: web
   annotations:
-    dtan4.net/deploy-target: "true"          # <===== ADDED
-    dtan4.net/github: web=dtan4/awesome-app  # <===== ADDED
+    example.com/deploy-target: "true"          # <===== ADDED
+    example.com/deploy-target-container: web   # <===== ADDED
+    example.com/github: web=dtan4/awesome-app  # <===== ADDED
 spec:
   replicas: 1
   template:
@@ -76,9 +77,9 @@ metadata:
     name: awesome-app
     role: web
   annotations:
-    dtan4.net/deploy-target: "true"          # <===== ADDED
-    dtan4.net/deploy-target-container: web   # <===== ADDED
-    dtan4.net/github: web=dtan4/awesome-app  # <===== ADDED
+    example.com/deploy-target: "true"          # <===== ADDED
+    example.com/deploy-target-container: web   # <===== ADDED
+    example.com/github: web=dtan4/awesome-app  # <===== ADDED
 spec:
   replicas: 1
   template:
@@ -102,6 +103,8 @@ To deploy Docker image `dtan4/foo:v3`:
 ```sh-session
 $ k8ship image dtan4/foo:v3
 ```
+
+:warning: You MUST add to `example.com/deploy-target="true"` annotation to target Deployment, otherwise `k8ship deploy` will fail.
 
 ### `k8ship image`
 
