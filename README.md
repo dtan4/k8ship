@@ -46,8 +46,8 @@ metadata:
     name: awesome-app
     role: web
   annotations:
-    dtan4.net/deploy-target: "true"         # <===== ADDED
-    dtan4.net/github: web=dtan4/awesome-app # <===== ADDED
+    dtan4.net/deploy-target: "true"          # <===== ADDED
+    dtan4.net/github: web=dtan4/awesome-app  # <===== ADDED
 spec:
   replicas: 1
   template:
@@ -76,9 +76,9 @@ metadata:
     name: awesome-app
     role: web
   annotations:
-    dtan4.net/deploy-target: "true"                # <===== ADDED
-    dtan4.net/deploy-target-container: web # <===== ADDED
-    dtan4.net/github: web=dtan4/awesome-app        # <===== ADDED
+    dtan4.net/deploy-target: "true"          # <===== ADDED
+    dtan4.net/deploy-target-container: web   # <===== ADDED
+    dtan4.net/github: web=dtan4/awesome-app  # <===== ADDED
 spec:
   replicas: 1
   template:
