@@ -9,7 +9,7 @@ Deploy image to Kubernetes
 
 Kubernetes 1.3 or above
 
-## Isage
+## Application Preparation
 
 ### Docker image
 
