@@ -1,6 +1,8 @@
 package kubernetes
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -21,7 +23,7 @@ func GetTargetImage(containers map[string]*Container) (string, error) {
 	images := map[string]bool{}
 
 	for _, c := range containers {
-		images[c.Image()] = true
+		images[strings.Split(c.Image(), ":")[0]] = true
 	}
 
 	ss := make([]string, 0, len(images))
