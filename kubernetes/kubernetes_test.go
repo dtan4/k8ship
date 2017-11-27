@@ -25,7 +25,7 @@ func TestGetTargetImage(t *testing.T) {
 				},
 			},
 			expectErr: false,
-			expected:  "my-rails:v3",
+			expected:  "my-rails",
 		},
 		{
 			containers: map[string]*Container{
@@ -43,7 +43,25 @@ func TestGetTargetImage(t *testing.T) {
 				},
 			},
 			expectErr: false,
-			expected:  "my-rails:v3",
+			expected:  "my-rails",
+		},
+		{
+			containers: map[string]*Container{
+				"web": &Container{
+					raw: &v1.Container{
+						Name:  "web",
+						Image: "my-rails:v3",
+					},
+				},
+				"worker": &Container{
+					raw: &v1.Container{
+						Name:  "worker",
+						Image: "my-rails:abc123",
+					},
+				},
+			},
+			expectErr: false,
+			expected:  "my-rails",
 		},
 		{
 			containers: map[string]*Container{

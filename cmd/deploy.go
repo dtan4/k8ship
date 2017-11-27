@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/dtan4/k8ship/github"
 	"github.com/dtan4/k8ship/kubernetes"
@@ -98,7 +97,7 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		}
 
 		if deployOpts.tag != "" {
-			newImage = strings.Split(image, ":")[0] + ":" + deployOpts.tag
+			newImage = image + ":" + deployOpts.tag
 		}
 	} else {
 		ctx := context.Background()
@@ -109,21 +108,23 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 			return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", deployOpts.ref, repo)
 		}
 
-		newImage = strings.Split(image, ":")[0] + ":" + sha1
+		newImage = image + ":" + sha1
 	}
 
 	if deployOpts.dryRun {
 		for _, d := range targetDeployments {
-			fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", d.Name(), targetContainers[d.Name()].Name())
+			c := targetContainers[d.Name()]
+			fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", d.Name(), c.Name())
+			fmt.Printf("[dry-run]  before: %s\n", c.Image())
+			fmt.Printf("[dry-run]   after: %s\n", newImage)
 		}
-		fmt.Printf("[dry-run]  before: %s\n", image)
-		fmt.Printf("[dry-run]   after: %s\n", newImage)
 	} else {
 		for _, d := range targetDeployments {
-			fmt.Printf("deploy to (deployment: %q, container: %q)\n", d.Name(), targetContainers[d.Name()].Name())
+			c := targetContainers[d.Name()]
+			fmt.Printf("deploy to (deployment: %q, container: %q)\n", d.Name(), c.Name())
+			fmt.Printf("  before: %s\n", c.Image())
+			fmt.Printf("   after: %s\n", newImage)
 		}
-		fmt.Printf("  before: %s\n", image)
-		fmt.Printf("   after: %s\n", newImage)
 
 		for _, d := range targetDeployments {
 			c := targetContainers[d.Name()]
