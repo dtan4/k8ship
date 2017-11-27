@@ -1,3 +1,11 @@
+# [v0.4.0](https://github.com/dtan4/k8ship/releases/tag/v0.3.0) (2017-11-27)
+
+## Features
+
+- `k8ship deploy` does not fail if the target image _tags_ are different [#16](https://github.com/dtan4/k8ship/pull/16)
+  - If the target images have the same image name but do not have the same image tag (e.g.,  `web:latest` and `web:abc123`), `k8ship deploy` does not fail and replaces to the given image.
+  - If the target images do not have the same image name (e.g., `web:latest` and `nginx:latest`), `k8ship deploy` will fail.
+
 # [v0.3.0](https://github.com/dtan4/k8ship/releases/tag/v0.3.0) (2017-07-19)
 
 ## Breaking changes
