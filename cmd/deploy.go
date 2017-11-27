@@ -115,15 +115,15 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 		for _, d := range targetDeployments {
 			c := targetContainers[d.Name()]
 			fmt.Printf("[dry-run] deploy to (deployment: %q, container: %q)\n", d.Name(), c.Name())
-			fmt.Printf("[dry-run]  before: %s\n", c.Image())
-			fmt.Printf("[dry-run]   after: %s\n", newImage)
+			fmt.Printf("[dry-run]   before: %s\n", c.Image())
+			fmt.Printf("[dry-run]   after:  %s\n", newImage)
 		}
 	} else {
 		for _, d := range targetDeployments {
 			c := targetContainers[d.Name()]
 			fmt.Printf("deploy to (deployment: %q, container: %q)\n", d.Name(), c.Name())
 			fmt.Printf("  before: %s\n", c.Image())
-			fmt.Printf("   after: %s\n", newImage)
+			fmt.Printf("  after:  %s\n", newImage)
 		}
 
 		for _, d := range targetDeployments {
