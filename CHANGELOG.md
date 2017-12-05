@@ -1,4 +1,10 @@
-# [v0.4.0](https://github.com/dtan4/k8ship/releases/tag/v0.3.0) (2017-11-27)
+# [v0.5.0](https://github.com/dtan4/k8ship/releases/tag/v0.5.0) (2017-12-05)
+
+## Features
+
+- `k8ship reload` reloads all Pods in Deployment [#18](https://github.com/dtan4/k8ship/pull/18)
+
+# [v0.4.0](https://github.com/dtan4/k8ship/releases/tag/v0.4.0) (2017-11-27)
 
 ## Features
 
