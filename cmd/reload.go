@@ -19,6 +19,7 @@ var reloadCmd = &cobra.Command{
 var reloadOpts = struct {
 	all        bool
 	deployment string
+	dryRun     bool
 	namespace  string
 }{}
 
@@ -68,13 +69,19 @@ func doReload(cmd *cobra.Command, args []string) error {
 
 	timestamp := time.Now().Local().String()
 
-	for _, d := range deployments {
-		_, err := k8sClient.ReloadPods(d, timestamp)
-		if err != nil {
-			return errors.Wrap(err, "failed to set annotations")
+	if reloadOpts.dryRun {
+		for _, d := range deployments {
+			fmt.Printf("[dry-run] reloaded all Pods in %s\n", d.Name())
 		}
+	} else {
+		for _, d := range deployments {
+			_, err := k8sClient.ReloadPods(d, timestamp)
+			if err != nil {
+				return errors.Wrap(err, "failed to set annotations")
+			}
 
-		fmt.Printf("reloaded all Pods in %s\n", d.Name())
+			fmt.Printf("reloaded all Pods in %s\n", d.Name())
+		}
 	}
 
 	return nil
@@ -85,5 +92,6 @@ func init() {
 
 	reloadCmd.Flags().BoolVarP(&reloadOpts.all, "all", "a", false, "reload all Deployments")
 	reloadCmd.Flags().StringVarP(&reloadOpts.deployment, "deployment", "d", "", "target Deployment")
+	reloadCmd.Flags().BoolVar(&reloadOpts.dryRun, "dry-run", false, "dry run")
 	reloadCmd.Flags().StringVarP(&reloadOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }
