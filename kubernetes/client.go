@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -149,6 +150,29 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 	}
 
 	return ds, nil
+}
+
+// SetAnnotations sets the given annotations to the given deployment
+func (c *Client) SetAnnotations(deployment *Deployment, annotations map[string]string) (*Deployment, error) {
+	j, err := json.Marshal(annotations)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to generate JSON from annotations: %v", annotations)
+	}
+
+	patch := fmt.Sprintf(`{
+  "spec": {
+    "metadata": {
+      "annotations": %s,
+    }
+  }
+}`, string(j))
+
+	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name())
+	}
+
+	return NewDeployment(c.annotationPrefix, newd), nil
 }
 
 // SetImage sets new image to the given deployments
