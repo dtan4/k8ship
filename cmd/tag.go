@@ -12,7 +12,7 @@ import (
 // tagCmd represents the tag command
 var tagCmd = &cobra.Command{
 	Use:   "tag",
-	Short: "Deploy by image tagn",
+	Short: "Deploy by image tag",
 	RunE:  doTag,
 }
 
