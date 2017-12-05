@@ -366,7 +366,7 @@ func TestListDeployments(t *testing.T) {
 	}
 }
 
-func TestSetAnnotations(t *testing.T) {
+func TestReloadPods(t *testing.T) {
 	raw := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      "deployment",
@@ -394,11 +394,9 @@ func TestSetAnnotations(t *testing.T) {
 		clientset: clientset,
 	}
 
-	annotations := map[string]string{
-		"foo": "BAR",
-	}
+	signature := "2017-12-05 12:18:31.789275051 +0900 JST"
 
-	_, err := client.SetAnnotations(deployment, annotations)
+	_, err := client.ReloadPods(deployment, signature)
 	if err != nil {
 		t.Errorf("got error: %s", err)
 		return

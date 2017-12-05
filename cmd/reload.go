@@ -46,9 +46,7 @@ func doReload(cmd *cobra.Command, args []string) error {
 	timestamp := time.Now().Local().String()
 
 	for _, d := range targetDeployments {
-		_, err := k8sClient.SetAnnotations(d, map[string]string{
-			"reloaded-at": timestamp,
-		})
+		_, err := k8sClient.ReloadPods(d, timestamp)
 		if err != nil {
 			return errors.Wrap(err, "failed to set annotations")
 		}

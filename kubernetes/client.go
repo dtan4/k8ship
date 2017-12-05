@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -152,22 +151,19 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 	return ds, nil
 }
 
-// SetAnnotations sets the given annotations to the given deployment
-func (c *Client) SetAnnotations(deployment *Deployment, annotations map[string]string) (*Deployment, error) {
-	j, err := json.Marshal(annotations)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate JSON from annotations: %v", annotations)
-	}
-
+// ReloadPods reloads all Pods in the given deployment by setting new annotation
+func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployment, error) {
 	patch := fmt.Sprintf(`{
   "spec": {
     "template": {
       "metadata": {
-        "annotations": %s
+        "annotations": {
+          "%s": %q
+        }
       }
     }
   }
-}`, string(j))
+}`, c.annotationPrefix+"reloaded-at", signature)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
