@@ -135,6 +135,16 @@ $ k8ship ref topic/foo -d app
 
 This command does the same as the above.
 
+### `k8ship reload`
+
+Reload all Pods in Deployment.
+
+The below command reload = redeploys Pods in the target Deployment, in manner of rolling deployment.
+
+```sh-session
+$ k8ship reload
+```
+
 ### `k8ship tag`
 
 Deploy with Docker image tag.
