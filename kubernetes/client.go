@@ -151,6 +151,28 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 	return ds, nil
 }
 
+// ReloadPods reloads all Pods in the given deployment by setting new annotation
+func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployment, error) {
+	patch := fmt.Sprintf(`{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "%s": %q
+        }
+      }
+    }
+  }
+}`, c.annotationPrefix+"reloaded-at", signature)
+
+	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update deployment %q", deployment.Name())
+	}
+
+	return NewDeployment(c.annotationPrefix, newd), nil
+}
+
 // SetImage sets new image to the given deployments
 func (c *Client) SetImage(deployment *Deployment, container, image, cause string) (*Deployment, error) {
 	patch := fmt.Sprintf(`{

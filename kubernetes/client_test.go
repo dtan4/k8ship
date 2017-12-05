@@ -366,6 +366,45 @@ func TestListDeployments(t *testing.T) {
 	}
 }
 
+func TestReloadPods(t *testing.T) {
+	raw := &v1beta1.Deployment{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "deployment",
+			Namespace: "default",
+		},
+		Spec: v1beta1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						v1.Container{
+							Name:  "rails",
+							Image: "my-rails:v2",
+						},
+					},
+				},
+			},
+		},
+	}
+	deployment := &Deployment{
+		raw: raw,
+	}
+
+	clientset := fake.NewSimpleClientset(raw)
+	client := &Client{
+		clientset: clientset,
+	}
+
+	signature := "2017-12-05 12:18:31.789275051 +0900 JST"
+
+	_, err := client.ReloadPods(deployment, signature)
+	if err != nil {
+		t.Errorf("got error: %s", err)
+		return
+	}
+
+	// Unfortunally, there is no way to check the updated Deployment image...
+}
+
 func TestSetImage(t *testing.T) {
 	raw := &v1beta1.Deployment{
 		ObjectMeta: v1.ObjectMeta{
