@@ -161,8 +161,10 @@ func (c *Client) SetAnnotations(deployment *Deployment, annotations map[string]s
 
 	patch := fmt.Sprintf(`{
   "spec": {
-    "metadata": {
-      "annotations": %s,
+    "template": {
+      "metadata": {
+        "annotations": %s
+      }
     }
   }
 }`, string(j))
