@@ -145,6 +145,18 @@ The below command reload = redeploys Pods in the target Deployment, in manner of
 $ k8ship reload
 ```
 
+To reload ALL Deployments:
+
+```sh-session
+$ k8ship reload --all
+```
+
+To reload Deployment `web`:
+
+```sh-session
+$ k8ship reload -d web
+```
+
 ### `k8ship tag`
 
 Deploy with Docker image tag.
