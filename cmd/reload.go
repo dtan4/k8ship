@@ -17,6 +17,7 @@ var reloadCmd = &cobra.Command{
 }
 
 var reloadOpts = struct {
+	all        bool
 	deployment string
 	namespace  string
 }{}
@@ -39,7 +40,23 @@ func doReload(cmd *cobra.Command, args []string) error {
 			return errors.Errorf("no Deployment found in namespace %s", reloadOpts.namespace)
 		}
 
-		deployments = ds
+		if reloadOpts.all {
+			deployments = ds
+		} else {
+			tds := []*kubernetes.Deployment{}
+
+			for _, d := range ds {
+				if d.IsDeployTarget() {
+					tds = append(tds, d)
+				}
+			}
+
+			if len(tds) == 0 {
+				return errors.New("no target Deployments found")
+			}
+
+			deployments = tds
+		}
 	} else {
 		d, err := k8sClient.GetDeployment(reloadOpts.namespace, reloadOpts.deployment)
 		if err != nil {
@@ -66,6 +83,7 @@ func doReload(cmd *cobra.Command, args []string) error {
 func init() {
 	RootCmd.AddCommand(reloadCmd)
 
+	reloadCmd.Flags().BoolVarP(&reloadOpts.all, "all", "a", false, "reload all Deployments")
 	reloadCmd.Flags().StringVarP(&reloadOpts.deployment, "deployment", "d", "", "target Deployment")
 	reloadCmd.Flags().StringVarP(&reloadOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }
