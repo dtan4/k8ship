@@ -1,39 +1,64 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-
-
 package cmd
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/dtan4/k8ship/kubernetes"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 // reloadCmd represents the reload command
 var reloadCmd = &cobra.Command{
 	Use:   "reload",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Reload Pods in Deployment",
+	RunE:  doReload,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("reload called")
-	},
+func doReload(cmd *cobra.Command, args []string) error {
+	k8sClient, err := kubernetes.NewClient(rootOpts.annotationPrefix, rootOpts.kubeconfig, rootOpts.context)
+	if err != nil {
+		return errors.Wrap(err, "failed to create Kubernetes client")
+	}
+
+	deployments, err := k8sClient.ListDeployments(deployOpts.namespace)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve Deployments")
+	}
+
+	if len(deployments) == 0 {
+		return errors.Errorf("no Deployment found in namespace %s", deployOpts.namespace)
+	}
+
+	targetDeployments := []*kubernetes.Deployment{}
+
+	for _, d := range deployments {
+		if d.IsDeployTarget() {
+			targetDeployments = append(targetDeployments, d)
+		}
+	}
+
+	if len(targetDeployments) == 0 {
+		return errors.New("no target Deployments found")
+	}
+
+	timestamp := time.Now().Local().String()
+
+	for _, d := range targetDeployments {
+		_, err := k8sClient.SetAnnotations(d, map[string]string{
+			"reloaded-at": timestamp,
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to set annotations")
+		}
+
+		fmt.Printf("reloaded all Pods in %s\n", d.Name())
+	}
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(reloadCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// reloadCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// reloadCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
