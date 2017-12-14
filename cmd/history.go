@@ -62,7 +62,7 @@ func doHistory(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, d := range tds {
-		fmt.Println("===== " + d.Name())
+		fmt.Println("===== " + d.Name() + " =====")
 
 		rs, err := client.ListReplicaSets(d)
 		if err != nil {
@@ -85,6 +85,8 @@ func doHistory(cmd *cobra.Command, args []string) error {
 		}
 
 		w.Flush()
+
+		fmt.Printf("\n")
 	}
 
 	return nil
