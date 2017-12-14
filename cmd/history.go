@@ -12,6 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	defaultHistoryLimit = 10
+)
+
 // historyCmd represents the history command
 var historyCmd = &cobra.Command{
 	Use:   "history",
@@ -20,6 +24,7 @@ var historyCmd = &cobra.Command{
 }
 
 var historyOpts = struct {
+	all       bool
 	namespace string
 }{}
 
@@ -72,6 +77,10 @@ func doHistory(cmd *cobra.Command, args []string) error {
 		lines := formatHistory(rs, tcs[d.Name()])
 		sort.Sort(sort.Reverse(sort.StringSlice(lines)))
 
+		if !historyOpts.all {
+			lines = lines[0:defaultHistoryLimit]
+		}
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		headers := []string{
 			"DEPLOYED AT",
@@ -105,5 +114,6 @@ func formatHistory(rs []*kubernetes.ReplicaSet, container *kubernetes.Container)
 func init() {
 	RootCmd.AddCommand(historyCmd)
 
+	historyCmd.Flags().BoolVarP(&historyOpts.all, "all", "a", false, fmt.Sprintf("Print all relases (default: recent %d items)", defaultHistoryLimit))
 	historyCmd.Flags().StringVarP(&historyOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 }
