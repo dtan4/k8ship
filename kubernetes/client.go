@@ -151,6 +151,26 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 	return ds, nil
 }
 
+// ListReplicaSets returns the list of ReplicaSets
+func (c *Client) ListReplicaSets(deployment *Deployment) ([]string, error) {
+	all, err := c.clientset.ExtensionsV1beta1().ReplicaSets(deployment.Namespace()).List(v1.ListOptions{})
+	if err != nil {
+		return []string{}, errors.Wrapf(err, "failed to retrieve ReplicaSets")
+	}
+
+	filtered := make([]string, 0, len(all.Items))
+
+	for _, rs := range all.Items {
+		for _, or := range rs.GetOwnerReferences() {
+			if string(or.UID) == deployment.UID() {
+				filtered = append(filtered, rs.Name)
+			}
+		}
+	}
+
+	return filtered, nil
+}
+
 // ReloadPods reloads all Pods in the given deployment by setting new annotation
 func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployment, error) {
 	patch := fmt.Sprintf(`{

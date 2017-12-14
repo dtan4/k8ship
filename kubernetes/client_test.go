@@ -7,6 +7,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/pkg/types"
 )
 
 func TestDetectTargetContainer_with_name(t *testing.T) {
@@ -363,6 +364,76 @@ func TestListDeployments(t *testing.T) {
 	expectedLength := 2
 	if len(got) != expectedLength {
 		t.Errorf("expected length: %d, got: %d", expectedLength, len(got))
+	}
+}
+
+func TestListReplicaSets(t *testing.T) {
+	replicasets := []v1beta1.ReplicaSet{
+		v1beta1.ReplicaSet{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "deployment-1234567890",
+				Namespace: "default",
+				OwnerReferences: []v1.OwnerReference{
+					v1.OwnerReference{
+						UID: (types.UID)("0001"),
+					},
+				},
+			},
+		},
+		v1beta1.ReplicaSet{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "foobar-9876543210",
+				Namespace: "default",
+				OwnerReferences: []v1.OwnerReference{
+					v1.OwnerReference{
+						UID: (types.UID)("0002"),
+					},
+				},
+			},
+		},
+	}
+
+	clientset := fake.NewSimpleClientset(&v1beta1.ReplicaSetList{
+		Items: replicasets,
+	})
+	client := &Client{
+		clientset: clientset,
+	}
+
+	deployment := &Deployment{
+		raw: &v1beta1.Deployment{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "deployment",
+				Namespace: "default",
+				UID:       (types.UID)("0001"),
+			},
+			Spec: v1beta1.DeploymentSpec{
+				Template: v1.PodTemplateSpec{
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							v1.Container{
+								Name: "rails",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got, err := client.ListReplicaSets(deployment)
+	if err != nil {
+		t.Errorf("got error: %s", err)
+	}
+
+	expectedLength := 1
+	if len(got) != expectedLength {
+		t.Errorf("expected length: %d, got: %d", expectedLength, len(got))
+	}
+
+	expectedName := "deployment-1234567890"
+	if got[0] != expectedName {
+		t.Errorf("expected: %q, got: %q", expectedName, got[0])
 	}
 }
 
