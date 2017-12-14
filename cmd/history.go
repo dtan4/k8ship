@@ -75,6 +75,7 @@ func doHistory(cmd *cobra.Command, args []string) error {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		headers := []string{
 			"CREATED AT",
+			"REVISION",
 			"DEPLOYED IMAGE",
 		}
 		fmt.Fprintln(w, strings.Join(headers, "\t"))
@@ -93,7 +94,7 @@ func formatHistory(rs []*kubernetes.ReplicaSet, container *kubernetes.Container)
 	lines := make([]string, 0, len(rs))
 
 	for _, r := range rs {
-		lines = append(lines, fmt.Sprintf("%s\t%s", r.CreatedAt(), r.Images()[container.Name()]))
+		lines = append(lines, fmt.Sprintf("%s\t%s\t%s", r.CreatedAt(), r.Revision(), r.Images()[container.Name()]))
 	}
 
 	return lines
