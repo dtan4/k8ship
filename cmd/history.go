@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/dtan4/k8ship/kubernetes"
 	"github.com/pkg/errors"
@@ -42,12 +43,25 @@ func doHistory(cmd *cobra.Command, args []string) error {
 			return errors.Wrap(err, "failed to retrieve ReplicaSets")
 		}
 
-		for _, r := range rs {
-			fmt.Printf("%s %s %s %s\n", r.Revision(), r.Name(), r.CreatedAt(), r.Images())
+		lines := formatHistory(rs)
+		sort.Sort(sort.Reverse(sort.StringSlice(lines)))
+
+		for _, l := range lines {
+			fmt.Println(l)
 		}
 	}
 
 	return nil
+}
+
+func formatHistory(rs []*kubernetes.ReplicaSet) []string {
+	lines := make([]string, 0, len(rs))
+
+	for _, r := range rs {
+		lines = append(lines, fmt.Sprintf("%s %s %s", r.CreatedAt(), r.Revision(), r.Images()))
+	}
+
+	return lines
 }
 
 func init() {
