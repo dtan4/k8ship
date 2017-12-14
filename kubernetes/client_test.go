@@ -432,8 +432,8 @@ func TestListReplicaSets(t *testing.T) {
 	}
 
 	expectedName := "deployment-1234567890"
-	if got[0] != expectedName {
-		t.Errorf("expected: %q, got: %q", expectedName, got[0])
+	if got[0].Name() != expectedName {
+		t.Errorf("expected: %q, got: %q", expectedName, got[0].Name())
 	}
 }
 

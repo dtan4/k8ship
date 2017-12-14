@@ -152,18 +152,18 @@ func (c *Client) ListDeployments(namespace string) ([]*Deployment, error) {
 }
 
 // ListReplicaSets returns the list of ReplicaSets
-func (c *Client) ListReplicaSets(deployment *Deployment) ([]string, error) {
+func (c *Client) ListReplicaSets(deployment *Deployment) ([]*ReplicaSet, error) {
 	all, err := c.clientset.ExtensionsV1beta1().ReplicaSets(deployment.Namespace()).List(v1.ListOptions{})
 	if err != nil {
-		return []string{}, errors.Wrapf(err, "failed to retrieve ReplicaSets")
+		return []*ReplicaSet{}, errors.Wrapf(err, "failed to retrieve ReplicaSets")
 	}
 
-	filtered := make([]string, 0, len(all.Items))
+	filtered := make([]*ReplicaSet, 0, len(all.Items))
 
 	for _, rs := range all.Items {
 		for _, or := range rs.GetOwnerReferences() {
 			if string(or.UID) == deployment.UID() {
-				filtered = append(filtered, rs.Name)
+				filtered = append(filtered, NewReplicaSet(&rs))
 			}
 		}
 	}
