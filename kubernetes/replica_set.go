@@ -27,6 +27,17 @@ func (r *ReplicaSet) CreatedAt() time.Time {
 	return r.raw.CreationTimestamp.Time
 }
 
+// Images returns the list of deployed images at the moment
+func (r *ReplicaSet) Images() map[string]string {
+	images := map[string]string{}
+
+	for _, c := range r.raw.Spec.Template.Spec.Containers {
+		images[c.Name] = c.Image
+	}
+
+	return images
+}
+
 // Name returns the name of ReplicaSet
 func (r *ReplicaSet) Name() string {
 	return r.raw.Name

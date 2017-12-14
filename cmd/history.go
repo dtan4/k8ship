@@ -43,7 +43,7 @@ func doHistory(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, r := range rs {
-			fmt.Printf("%s %s %s\n", r.Revision(), r.Name(), r.CreatedAt())
+			fmt.Printf("%s %s %s %s\n", r.Revision(), r.Name(), r.CreatedAt(), r.Images())
 		}
 	}
 
