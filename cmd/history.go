@@ -74,7 +74,7 @@ func doHistory(cmd *cobra.Command, args []string) error {
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		headers := []string{
-			"CREATED AT",
+			"DEPLOYED AT",
 			"REVISION",
 			"DEPLOYED IMAGE",
 		}
