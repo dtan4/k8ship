@@ -70,10 +70,20 @@ func formatHistory(rs []*kubernetes.ReplicaSet) []string {
 	lines := make([]string, 0, len(rs))
 
 	for _, r := range rs {
-		lines = append(lines, fmt.Sprintf("%s\t%s", r.CreatedAt(), r.Images()))
+		lines = append(lines, fmt.Sprintf("%s\t%s", r.CreatedAt(), formatImages(r.Images())))
 	}
 
 	return lines
+}
+
+func formatImages(images map[string]string) string {
+	ss := make([]string, 0, len(images))
+
+	for k, v := range images {
+		ss = append(ss, k+" => "+v)
+	}
+
+	return strings.Join(ss, ",")
 }
 
 func init() {
