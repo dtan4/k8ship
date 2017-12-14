@@ -58,7 +58,7 @@ func formatHistory(rs []*kubernetes.ReplicaSet) []string {
 	lines := make([]string, 0, len(rs))
 
 	for _, r := range rs {
-		lines = append(lines, fmt.Sprintf("%s %s %s", r.CreatedAt(), r.Revision(), r.Images()))
+		lines = append(lines, fmt.Sprintf("%s %s", r.CreatedAt(), r.Images()))
 	}
 
 	return lines
