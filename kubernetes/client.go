@@ -163,7 +163,8 @@ func (c *Client) ListReplicaSets(deployment *Deployment) ([]*ReplicaSet, error) 
 	for _, rs := range all.Items {
 		for _, or := range rs.GetOwnerReferences() {
 			if string(or.UID) == deployment.UID() {
-				filtered = append(filtered, NewReplicaSet(&rs))
+				r := rs
+				filtered = append(filtered, NewReplicaSet(&r))
 			}
 		}
 	}
