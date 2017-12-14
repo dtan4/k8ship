@@ -38,7 +38,30 @@ func doHistory(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("no Deployment found in namespace %s", historyOpts.namespace)
 	}
 
+	tds := []*kubernetes.Deployment{}
+
 	for _, d := range ds {
+		if d.IsDeployTarget() {
+			tds = append(tds, d)
+		}
+	}
+
+	if len(tds) == 0 {
+		return errors.New("no target Deployments found")
+	}
+
+	tcs := map[string]*kubernetes.Container{}
+
+	for _, d := range tds {
+		c, err := d.DeployTargetContainer()
+		if err != nil {
+			return errors.Wrapf(err, "failed to retrieve deploy target container of Deployment %q", d.Name())
+		}
+
+		tcs[d.Name()] = c
+	}
+
+	for _, d := range tds {
 		fmt.Println("===== " + d.Name())
 
 		rs, err := client.ListReplicaSets(d)
@@ -46,13 +69,13 @@ func doHistory(cmd *cobra.Command, args []string) error {
 			return errors.Wrap(err, "failed to retrieve ReplicaSets")
 		}
 
-		lines := formatHistory(rs)
+		lines := formatHistory(rs, tcs[d.Name()])
 		sort.Sort(sort.Reverse(sort.StringSlice(lines)))
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		headers := []string{
 			"CREATED AT",
-			"IMAGES",
+			"DEPLOYED IMAGE",
 		}
 		fmt.Fprintln(w, strings.Join(headers, "\t"))
 
@@ -66,24 +89,14 @@ func doHistory(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func formatHistory(rs []*kubernetes.ReplicaSet) []string {
+func formatHistory(rs []*kubernetes.ReplicaSet, container *kubernetes.Container) []string {
 	lines := make([]string, 0, len(rs))
 
 	for _, r := range rs {
-		lines = append(lines, fmt.Sprintf("%s\t%s", r.CreatedAt(), formatImages(r.Images())))
+		lines = append(lines, fmt.Sprintf("%s\t%s", r.CreatedAt(), r.Images()[container.Name()]))
 	}
 
 	return lines
-}
-
-func formatImages(images map[string]string) string {
-	ss := make([]string, 0, len(images))
-
-	for k, v := range images {
-		ss = append(ss, k+" => "+v)
-	}
-
-	return strings.Join(ss, ",")
 }
 
 func init() {
