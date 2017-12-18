@@ -2,6 +2,7 @@
 
 ## Features
 
+- Replace "DEPLOYED IMAGE" to "IMAGE" in header [#27](https://github.com/dtan4/k8ship/pull/27)
 - Attach user name with reload [#25](https://github.com/dtan4/k8ship/pull/25)
 - Print deploy user in `k8ship history` output [#24](https://github.com/dtan4/k8ship/pull/24)
 - Check history length before extracting [#23](https://github.com/dtan4/k8ship/pull/2)3
