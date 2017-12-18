@@ -25,6 +25,7 @@ var refOpts = struct {
 	deployment  string
 	dryRun      bool
 	namespace   string
+	user        string
 }{}
 
 func doRef(cmd *cobra.Command, args []string) error {
@@ -79,7 +80,7 @@ func doRef(cmd *cobra.Command, args []string) error {
 		fmt.Printf("   after: %s\n", newImage)
 
 		if _, err := k8sClient.SetImage(
-			deployment, container.Name(), newImage, composeRefCause(ref, container.Name(), deployment.Name(), refOpts.namespace),
+			deployment, container.Name(), newImage, refOpts.user, composeRefCause(ref, container.Name(), deployment.Name(), refOpts.namespace),
 		); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
@@ -103,8 +104,13 @@ func init() {
 	refCmd.Flags().StringVarP(&refOpts.deployment, "deployment", "d", "", "target Deployment")
 	refCmd.Flags().BoolVar(&refOpts.dryRun, "dry-run", false, "dry run")
 	refCmd.Flags().StringVarP(&refOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
+	refCmd.Flags().StringVarP(&refOpts.user, "user", "u", "", "image tag to deploy (default: current login user)")
 
 	if refOpts.accessToken == "" {
 		refOpts.accessToken = os.Getenv("GITHUB_ACCESS_TOKEN")
+	}
+
+	if refOpts.user == "" {
+		refOpts.user = os.Getenv("USER")
 	}
 }

@@ -195,7 +195,7 @@ func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployme
 }
 
 // SetImage sets new image to the given deployments
-func (c *Client) SetImage(deployment *Deployment, container, image, cause string) (*Deployment, error) {
+func (c *Client) SetImage(deployment *Deployment, container, image, user, cause string) (*Deployment, error) {
 	patch := fmt.Sprintf(`{
   "metadata": {
     "annotations": {
@@ -219,7 +219,7 @@ func (c *Client) SetImage(deployment *Deployment, container, image, cause string
       }
     }
   }
-}`, changeCauseAnnotation, cause, c.annotationPrefix+"deploy-user", "dtan4", container, image)
+}`, changeCauseAnnotation, cause, c.annotationPrefix+"deploy-user", user, container, image)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {

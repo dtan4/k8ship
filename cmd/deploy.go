@@ -25,6 +25,7 @@ var deployOpts = struct {
 	namespace   string
 	ref         string
 	tag         string
+	user        string
 }{}
 
 func doDeploy(cmd *cobra.Command, args []string) error {
@@ -130,7 +131,7 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 			c := targetContainers[d.Name()]
 
 			if _, err := k8sClient.SetImage(
-				d, c.Name(), newImage, composeDeployCause(deployOpts.ref, deployOpts.image, deployOpts.tag, deployOpts.namespace),
+				d, c.Name(), newImage, deployOpts.user, composeDeployCause(deployOpts.ref, deployOpts.image, deployOpts.tag, deployOpts.namespace),
 			); err != nil {
 				return errors.Wrap(err, "failed to set image")
 			}
@@ -167,8 +168,13 @@ func init() {
 	deployCmd.Flags().StringVar(&deployOpts.image, "image", "", "image to deploy")
 	deployCmd.Flags().StringVarP(&deployOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
 	deployCmd.Flags().StringVar(&deployOpts.tag, "tag", "", "image tag to deploy")
+	deployCmd.Flags().StringVarP(&deployOpts.user, "user", "u", "", "image tag to deploy (default: current login user)")
 
 	if deployOpts.accessToken == "" {
 		deployOpts.accessToken = os.Getenv("GITHUB_ACCESS_TOKEN")
+	}
+
+	if deployOpts.user == "" {
+		deployOpts.user = os.Getenv("USER")
 	}
 }

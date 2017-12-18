@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/dtan4/k8ship/kubernetes"
 	"github.com/pkg/errors"
@@ -20,6 +21,7 @@ var imageOpts = struct {
 	deployment string
 	dryRun     bool
 	namespace  string
+	user       string
 }{}
 
 func doImage(cmd *cobra.Command, args []string) error {
@@ -53,7 +55,7 @@ func doImage(cmd *cobra.Command, args []string) error {
 		fmt.Printf("   after: %s\n", image)
 
 		if _, err := client.SetImage(
-			deployment, container.Name(), image, composeImageCause(image, container.Name(), deployment.Name(), tagOpts.namespace),
+			deployment, container.Name(), image, imageOpts.user, composeImageCause(image, container.Name(), deployment.Name(), tagOpts.namespace),
 		); err != nil {
 			return errors.Wrap(err, "failed to set image")
 		}
@@ -76,4 +78,9 @@ func init() {
 	imageCmd.Flags().StringVarP(&imageOpts.deployment, "deployment", "d", "", "target Deployment")
 	imageCmd.Flags().BoolVar(&imageOpts.dryRun, "dry-run", false, "dry run")
 	imageCmd.Flags().StringVarP(&imageOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
+	imageCmd.Flags().StringVarP(&imageOpts.user, "user", "u", "", "image tag to deploy (default: current login user)")
+
+	if imageOpts.user == "" {
+		imageOpts.user = os.Getenv("USER")
+	}
 }
