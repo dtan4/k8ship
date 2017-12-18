@@ -8,13 +8,15 @@ import (
 
 // ReplicaSet represents the wrapper of Kubernetes ReplicaSet
 type ReplicaSet struct {
-	raw *v1beta1.ReplicaSet
+	annotationPrefix string
+	raw              *v1beta1.ReplicaSet
 }
 
 // NewReplicaSet creates ne ReplicaSet object
-func NewReplicaSet(raw *v1beta1.ReplicaSet) *ReplicaSet {
+func NewReplicaSet(annotationPrefix string, raw *v1beta1.ReplicaSet) *ReplicaSet {
 	return &ReplicaSet{
-		raw: raw,
+		annotationPrefix: annotationPrefix,
+		raw:              raw,
 	}
 }
 
@@ -25,7 +27,7 @@ func (r *ReplicaSet) CreatedAt() time.Time {
 
 // DeployUser returns the deploy user
 func (r *ReplicaSet) DeployUser() string {
-	return r.raw.Spec.Template.Annotations[deployUserAnnotation]
+	return r.raw.Spec.Template.Annotations[r.annotationPrefix+deployUserAnnotation]
 }
 
 // Images returns the list of deployed images at the moment
