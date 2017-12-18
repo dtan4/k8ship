@@ -7,13 +7,6 @@ import (
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-const (
-	deployTargetAnnotation          = "deploy-target"
-	deployTargetContainerAnnotation = "deploy-target-container"
-
-	githubAnnotation = "github"
-)
-
 var (
 	deployTargetAnnotationTrue = []string{"1", "true"}
 )

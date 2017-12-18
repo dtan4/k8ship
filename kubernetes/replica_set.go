@@ -6,10 +6,6 @@ import (
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-const (
-	revisionAnnotation = "deployment.kubernetes.io/revision"
-)
-
 // ReplicaSet represents the wrapper of Kubernetes ReplicaSet
 type ReplicaSet struct {
 	raw *v1beta1.ReplicaSet
@@ -29,7 +25,7 @@ func (r *ReplicaSet) CreatedAt() time.Time {
 
 // DeployUser returns the deploy user
 func (r *ReplicaSet) DeployUser() string {
-	return r.raw.Spec.Template.Annotations["deploy-user"]
+	return r.raw.Spec.Template.Annotations[deployUserAnnotation]
 }
 
 // Images returns the list of deployed images at the moment

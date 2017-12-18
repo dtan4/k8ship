@@ -8,6 +8,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	deployTargetAnnotation          = "deploy-target"
+	deployTargetContainerAnnotation = "deploy-target-container"
+	deployUserAnnotation            = "deploy-user"
+
+	changeCauseAnnotation = "kubernetes.io/change-cause"
+	revisionAnnotation    = "deployment.kubernetes.io/revision"
+
+	githubAnnotation = "github"
+)
+
 // DefaultConfigFile returns the default kubeconfig file path
 func DefaultConfigFile() string {
 	return clientcmd.RecommendedHomeFile
