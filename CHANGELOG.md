@@ -1,3 +1,13 @@
+# [v0.6.0](https://github.com/dtan4/k8ship/releases/tag/v0.6.0) (2017-12-18)
+
+## Features
+
+- Attach user name with reload [#25](https://github.com/dtan4/k8ship/pull/25)
+- Print deploy user in `k8ship history` output [#24](https://github.com/dtan4/k8ship/pull/24)
+- Check history length before extracting [#23](https://github.com/dtan4/k8ship/pull/2)3
+- Deploy with username [#22](https://github.com/dtan4/k8ship/pull/22)
+- Add `k8ship history` command [#21](https://github.com/dtan4/k8ship/pull/21)
+
 # [v0.5.0](https://github.com/dtan4/k8ship/releases/tag/v0.5.0) (2017-12-05)
 
 ## Features
