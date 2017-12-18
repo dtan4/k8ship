@@ -77,7 +77,7 @@ func doHistory(cmd *cobra.Command, args []string) error {
 		lines := formatHistory(rs, tcs[d.Name()])
 		sort.Sort(sort.Reverse(sort.StringSlice(lines)))
 
-		if !historyOpts.all {
+		if !historyOpts.all && len(lines) > defaultHistoryLimit {
 			lines = lines[0:defaultHistoryLimit]
 		}
 
