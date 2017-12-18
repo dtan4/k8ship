@@ -12,12 +12,11 @@ const (
 	deployTargetAnnotation          = "deploy-target"
 	deployTargetContainerAnnotation = "deploy-target-container"
 	deployUserAnnotation            = "deploy-user"
+	githubAnnotation                = "github"
 	reloadedAtAnnotation            = "reloaded-at"
 
 	changeCauseAnnotation = "kubernetes.io/change-cause"
 	revisionAnnotation    = "deployment.kubernetes.io/revision"
-
-	githubAnnotation = "github"
 )
 
 // DefaultConfigFile returns the default kubeconfig file path
