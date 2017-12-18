@@ -27,6 +27,11 @@ func (r *ReplicaSet) CreatedAt() time.Time {
 	return r.raw.CreationTimestamp.Time
 }
 
+// DeployUser returns the deploy user
+func (r *ReplicaSet) DeployUser() string {
+	return r.raw.Spec.Template.Annotations["deploy-user"]
+}
+
 // Images returns the list of deployed images at the moment
 func (r *ReplicaSet) Images() map[string]string {
 	images := map[string]string{}
