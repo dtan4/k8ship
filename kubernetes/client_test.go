@@ -465,9 +465,10 @@ func TestReloadPods(t *testing.T) {
 		clientset: clientset,
 	}
 
+	user := "dtan4"
 	signature := "2017-12-05 12:18:31.789275051 +0900 JST"
 
-	_, err := client.ReloadPods(deployment, signature)
+	_, err := client.ReloadPods(deployment, user, signature)
 	if err != nil {
 		t.Errorf("got error: %s", err)
 		return
