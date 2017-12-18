@@ -86,7 +86,7 @@ func doHistory(cmd *cobra.Command, args []string) error {
 			"DEPLOYED AT",
 			"REVISION",
 			"USER",
-			"DEPLOYED IMAGE",
+			"IMAGE",
 		}
 		fmt.Fprintln(w, strings.Join(headers, "\t"))
 
