@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/dtan4/k8ship/kubernetes"
@@ -21,6 +22,7 @@ var reloadOpts = struct {
 	deployment string
 	dryRun     bool
 	namespace  string
+	user       string
 }{}
 
 func doReload(cmd *cobra.Command, args []string) error {
@@ -75,7 +77,7 @@ func doReload(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		for _, d := range deployments {
-			_, err := k8sClient.ReloadPods(d, timestamp)
+			_, err := k8sClient.ReloadPods(d, reloadOpts.user, timestamp)
 			if err != nil {
 				return errors.Wrap(err, "failed to set annotations")
 			}
@@ -94,4 +96,9 @@ func init() {
 	reloadCmd.Flags().StringVarP(&reloadOpts.deployment, "deployment", "d", "", "target Deployment")
 	reloadCmd.Flags().BoolVar(&reloadOpts.dryRun, "dry-run", false, "dry run")
 	reloadCmd.Flags().StringVarP(&reloadOpts.namespace, "namespace", "n", kubernetes.DefaultNamespace(), "Kubernetes namespace")
+	reloadCmd.Flags().StringVarP(&reloadOpts.user, "user", "u", "", "image tag to deploy (default: current login user)")
+
+	if reloadOpts.user == "" {
+		reloadOpts.user = os.Getenv("USER")
+	}
 }

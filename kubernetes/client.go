@@ -169,18 +169,19 @@ func (c *Client) ListReplicaSets(deployment *Deployment) ([]*ReplicaSet, error) 
 }
 
 // ReloadPods reloads all Pods in the given deployment by setting new annotation
-func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployment, error) {
+func (c *Client) ReloadPods(deployment *Deployment, user, signature string) (*Deployment, error) {
 	patch := fmt.Sprintf(`{
   "spec": {
     "template": {
       "metadata": {
         "annotations": {
+          "%s": %q,
           "%s": %q
         }
       }
     }
   }
-}`, c.annotationPrefix+reloadedAtAnnotation, signature)
+}`, c.annotationPrefix+deployUserAnnotation, user, c.annotationPrefix+reloadedAtAnnotation, signature)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
