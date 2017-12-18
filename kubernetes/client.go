@@ -180,7 +180,7 @@ func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployme
       }
     }
   }
-}`, c.annotationPrefix+"reloaded-at", signature)
+}`, c.annotationPrefix+reloadedAtAnnotation, signature)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {

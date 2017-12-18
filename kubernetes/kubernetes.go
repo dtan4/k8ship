@@ -12,6 +12,7 @@ const (
 	deployTargetAnnotation          = "deploy-target"
 	deployTargetContainerAnnotation = "deploy-target-container"
 	deployUserAnnotation            = "deploy-user"
+	reloadedAtAnnotation            = "reloaded-at"
 
 	changeCauseAnnotation = "kubernetes.io/change-cause"
 	revisionAnnotation    = "deployment.kubernetes.io/revision"
