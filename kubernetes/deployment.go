@@ -122,3 +122,8 @@ func (d *Deployment) Repositories() (map[string]string, error) {
 
 	return repos, nil
 }
+
+// UID returns the UID of Deployment
+func (d *Deployment) UID() string {
+	return string(d.raw.UID)
+}
