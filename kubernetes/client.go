@@ -204,6 +204,11 @@ func (c *Client) SetImage(deployment *Deployment, container, image, cause string
   },
   "spec": {
     "template": {
+      "metadata": {
+        "annotations": {
+          "%s": %q
+        }
+      },
       "spec": {
         "containers": [
           {
@@ -214,7 +219,7 @@ func (c *Client) SetImage(deployment *Deployment, container, image, cause string
       }
     }
   }
-}`, changeCauseAnnotation, cause, container, image)
+}`, changeCauseAnnotation, cause, c.annotationPrefix+"deploy-user", "dtan4", container, image)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
