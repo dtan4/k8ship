@@ -31,6 +31,36 @@ func TestCreatedAt(t *testing.T) {
 	}
 }
 
+func TestDeployUser(t *testing.T) {
+	raw := &v1beta1.ReplicaSet{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "deployment-1234567890",
+			Namespace: "default",
+			CreationTimestamp: unversioned.Time{
+				Time: time.Date(2017, 12, 14, 16, 36, 17, 0, time.UTC),
+			},
+		},
+		Spec: v1beta1.ReplicaSetSpec{
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: v1.ObjectMeta{
+					Annotations: map[string]string{
+						"deploy-user": "dtan4",
+					},
+				},
+			},
+		},
+	}
+	r := &ReplicaSet{
+		raw: raw,
+	}
+
+	got := r.DeployUser()
+	want := "dtan4"
+	if got != want {
+		t.Errorf("want: %q, got: %q", want, got)
+	}
+}
+
 func TestImages(t *testing.T) {
 	raw := &v1beta1.ReplicaSet{
 		ObjectMeta: v1.ObjectMeta{

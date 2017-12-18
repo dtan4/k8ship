@@ -11,10 +11,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const (
-	changeCauseAnnotation = "kubernetes.io/change-cause"
-)
-
 // Client represents the wrapper of Kubernetes API client
 type Client struct {
 	annotationPrefix string
@@ -164,7 +160,7 @@ func (c *Client) ListReplicaSets(deployment *Deployment) ([]*ReplicaSet, error) 
 		for _, or := range rs.GetOwnerReferences() {
 			if string(or.UID) == deployment.UID() {
 				r := rs
-				filtered = append(filtered, NewReplicaSet(&r))
+				filtered = append(filtered, NewReplicaSet(c.annotationPrefix, &r))
 			}
 		}
 	}
@@ -184,7 +180,7 @@ func (c *Client) ReloadPods(deployment *Deployment, signature string) (*Deployme
       }
     }
   }
-}`, c.annotationPrefix+"reloaded-at", signature)
+}`, c.annotationPrefix+reloadedAtAnnotation, signature)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
@@ -219,7 +215,7 @@ func (c *Client) SetImage(deployment *Deployment, container, image, user, cause 
       }
     }
   }
-}`, changeCauseAnnotation, cause, c.annotationPrefix+"deploy-user", user, container, image)
+}`, changeCauseAnnotation, cause, c.annotationPrefix+deployUserAnnotation, user, container, image)
 
 	newd, err := c.clientset.ExtensionsV1beta1().Deployments(deployment.Namespace()).Patch(deployment.Name(), api.StrategicMergePatchType, []byte(patch))
 	if err != nil {
