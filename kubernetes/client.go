@@ -58,6 +58,16 @@ func NewClientInCluster(annotationPrefix string) (*Client, error) {
 	}, nil
 }
 
+// CurrentContext returns the current cluster name
+func (c *Client) CurrentContext() (string, error) {
+	rc, err := c.clientConfig.RawConfig()
+	if err != nil {
+		return "", errors.Wrap(err, "failed to retrieve raw kubeconfig")
+	}
+
+	return rc.CurrentContext, nil
+}
+
 // DetectTargetContainer returns the matched or the first container
 func (c *Client) DetectTargetContainer(deployment *Deployment, name string) (*Container, error) {
 	if name == "" {

@@ -10,6 +10,10 @@ import (
 	"k8s.io/client-go/pkg/types"
 )
 
+func TestCurrentContext(t *testing.T) {
+	// TODO
+}
+
 func TestDetectTargetContainer_with_name(t *testing.T) {
 	deployment := &Deployment{
 		raw: &v1beta1.Deployment{
