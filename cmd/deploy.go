@@ -109,6 +109,18 @@ func doDeploy(cmd *cobra.Command, args []string) error {
 			return errors.Wrapf(err, "failed to retrieve commit SHA-1 matched to ref %q in repo %q", deployOpts.ref, repo)
 		}
 
+		cc, err := k8sClient.CurrentContext()
+		if err != nil {
+			return errors.Wrap(err, "failed to retrieve current context")
+		}
+
+		did, err := ghClient.CreateDeployment(repo, deployOpts.ref, cc)
+		if err != nil {
+			return errors.Wrap(err, "failed to create GitHub Deployment")
+		}
+
+		fmt.Printf("Deployment ID: %d\n", did)
+
 		newImage = image + ":" + sha1
 	}
 
