@@ -172,6 +172,7 @@ $ k8ship tag dtan4/foo:v3 -d web
 |Key|Description|Required|Example|
 |---|---|---|---|
 |`GITHUB_ACCESS_TOKEN`|GitHub access token|Required||
+|`GITHUB_DEPLOYMENT_ENABLED`|Create GitHub Deployment at deploy or not||`1` or empty|
 |`K8SHIP_ANNOTATION_PREFIX`|Prefix of k8ship-specific annotation|Required|`example.com`|
 |`KUBECONFIG`|Path of kubeconfig|||
 
