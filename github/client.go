@@ -44,3 +44,24 @@ func (c *Client) CommitFronRef(repo, ref string) (string, error) {
 
 	return sha1, nil
 }
+
+// CreateDeployment creates Deployment and returns Deployment ID
+// https://developer.github.com/v3/repos/deployments/
+func (c *Client) CreateDeployment(repo, ref, cluster string) (int, error) {
+	ss := strings.Split(repo, "/")
+	if len(ss) != 2 {
+		return -1, errors.Errorf("invalid repository %q, must be owner/repo", repo)
+	}
+
+	d, _, err := c.client.Repositories.CreateDeployment(c.ctx, ss[0], ss[1], &github.DeploymentRequest{
+		Description:      github.String("k8ship deploy"),
+		Environment:      github.String(cluster),
+		Ref:              github.String(ref),
+		RequiredContexts: &[]string{},
+	})
+	if err != nil {
+		return -1, errors.Wrap(err, "failed to create Deployment")
+	}
+
+	return d.GetID(), nil
+}
