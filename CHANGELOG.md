@@ -1,3 +1,9 @@
+# [v0.7.0](https://github.com/dtan4/k8ship/releases/tag/v0.7.0) (2018-01-24)
+
+## Features
+
+- Create GitHub Deployment at `k8ship deploy` [#28](https://github.com/dtan4/k8ship/pull/28)
+
 # [v0.6.0](https://github.com/dtan4/k8ship/releases/tag/v0.6.0) (2017-12-18)
 
 ## Features
