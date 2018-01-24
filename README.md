@@ -103,6 +103,8 @@ To deploy Docker image `dtan4/foo:v3`:
 $ k8ship image dtan4/foo:v3
 ```
 
+If `GITHUB_DEPLOYMENT_ENABLED=1` is set, GitHub Deployment will be created at the commit.
+
 :warning: You MUST add to `example.com/deploy-target="true"` annotation to target Deployment, otherwise `k8ship deploy` will fail.
 
 ### `k8ship image`
