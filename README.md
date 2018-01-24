@@ -97,10 +97,16 @@ spec:
 Deploy with Git commit reference (branch name / commit SHA-1 value).
 Target deployment and container are detected automatically from Deployment manifest.
 
-To deploy Docker image `dtan4/foo:v3`:
+To deploy `master` branch:
 
 ```sh-session
-$ k8ship image dtan4/foo:v3
+$ k8ship image master
+```
+
+or `feature/great` branch:
+
+```sh-session
+$ k8ship image feature/great
 ```
 
 If `GITHUB_DEPLOYMENT_ENABLED=1` is set, GitHub Deployment will be created at the commit.
