@@ -63,5 +63,12 @@ func (c *Client) CreateDeployment(repo, ref, cluster string) (int, error) {
 		return -1, errors.Wrap(err, "failed to create Deployment")
 	}
 
+	_, _, err = c.client.Repositories.CreateDeploymentStatus(c.ctx, ss[0], ss[1], d.GetID(), &github.DeploymentStatusRequest{
+		State: github.String("success"),
+	})
+	if err != nil {
+		return -1, errors.Wrap(err, "failed to update Deployment status: 'pending' -> 'success'")
+	}
+
 	return d.GetID(), nil
 }
