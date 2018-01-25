@@ -1,3 +1,9 @@
+# [v0.7.1](https://github.com/dtan4/k8ship/releases/tag/v0.7.1) (2018-01-25)
+
+## Features
+
+- Change Deployment status: pending -> success [#30](https://github.com/dtan4/k8ship/pull/30)
+
 # [v0.7.0](https://github.com/dtan4/k8ship/releases/tag/v0.7.0) (2018-01-24)
 
 ## Features
